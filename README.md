@@ -16,6 +16,12 @@ There are two modes:
   locates the **Ы inside the word** and scores it against that word's target,
   with a native-speaker reference to listen to.
 
+## Documentation
+
+- [docs/STATUS.md](docs/STATUS.md) — what's built (features, pipeline, tooling).
+- [docs/ASSESSMENT.md](docs/ASSESSMENT.md) — honest strengths & limitations.
+- [docs/ROADMAP.md](docs/ROADMAP.md) — future plans.
+
 ## How the analysis works
 
 1. **Capture** — `getUserMedia` + `MediaRecorder`, then decode and resample to
