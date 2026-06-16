@@ -46,8 +46,8 @@ export const TARGETS: Record<SoundTarget["id"], SoundTarget> = {
     prompt: "Say a long «ы» — as in мы, ты, сын.",
     hint: "Like «и», but pull the tongue back toward your throat and keep lips unrounded. Smile slightly, do not pucker.",
     // High, central vowel: low F1, mid F2 (between front [i] ~2200 and back [u] ~850).
-    f1: { center: 350, tolerance: 130 },
-    f2: { center: 1500, tolerance: 280 },
+    f1: { center: 350, tolerance: 90 },
+    f2: { center: 1500, tolerance: 200 },
     // F2 (tongue front/back) is the decisive cue: confusing «и»/«у» is an F2 error.
     weights: { f1: 0.4, f2: 0.6 },
     mistakes: {
@@ -66,8 +66,8 @@ export const TARGETS: Record<SoundTarget["id"], SoundTarget> = {
     prompt: "Produce a voiced «ע / ع» — a tight, voiced sound deep in the throat.",
     hint: "Constrict the pharynx (root of the tongue toward the back wall) and keep voicing, as if gently choking while humming. Not a glottal stop, not an «h».",
     // Pharyngeal constriction: raised F1, low F2 — the two move toward each other.
-    f1: { center: 700, tolerance: 180 },
-    f2: { center: 1150, tolerance: 250 },
+    f1: { center: 700, tolerance: 125 },
+    f2: { center: 1150, tolerance: 175 },
     // A consonant ([ʕ]), but voiced and continuant, so its formants are
     // measurable. The signature of pharyngeal constriction is a RAISED F1,
     // so F1 is the decisive cue here — the opposite weighting from Ы.
