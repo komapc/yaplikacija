@@ -11,9 +11,6 @@ const F2_MAX = 2600;
 const F1_MIN = 200;
 const F1_MAX = 1000;
 
-// Draw the target zone tighter than the full scoring tolerance, so it reads as
-// a "bullseye" to aim for rather than a large pass/fail blob.
-const TARGET_DISPLAY_SCALE = 0.6;
 // Drop this fraction of the recording from each end (onset/offset wobble) and
 // cap how many frames the cloud shows, to keep it legible.
 const STEADY_TRIM = 0.2;
@@ -74,11 +71,12 @@ export function drawFormantChart(
     ctx.fillText(a.label, ax + 5, ay + 4);
   }
 
-  // Target zone ellipse, drawn tighter than the full tolerance (see scale).
+  // Target zone: an axis-aligned ellipse at the true per-formant tolerances,
+  // so the ring is exactly the boundary the (independent-F1/F2) scoring uses.
   const cx = x(target.f2.center);
   const cy = y(target.f1.center);
-  const rx = (target.f2.tolerance / (F2_MAX - F2_MIN)) * plotW * TARGET_DISPLAY_SCALE;
-  const ry = (target.f1.tolerance / (F1_MAX - F1_MIN)) * plotH * TARGET_DISPLAY_SCALE;
+  const rx = (target.f2.tolerance / (F2_MAX - F2_MIN)) * plotW;
+  const ry = (target.f1.tolerance / (F1_MAX - F1_MIN)) * plotH;
   ctx.beginPath();
   ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
   ctx.fillStyle = "rgba(72, 199, 142, 0.18)";
