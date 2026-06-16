@@ -226,15 +226,33 @@ async function endRecording(): Promise<void> {
   }
 }
 
+// One persistent audio element: an unreferenced `new Audio()` can be garbage
+// collected mid-playback (notably on mobile), which cut playback off. Reusing a
+// module-level element keeps it alive and lets us revoke the previous blob URL.
+let player: HTMLAudioElement | null = null;
+let playerUrl: string | null = null;
+
+function play(src: string, isObjectUrl = false): void {
+  if (!player) player = new Audio();
+  player.pause();
+  if (playerUrl) {
+    URL.revokeObjectURL(playerUrl);
+    playerUrl = null;
+  }
+  player.src = src;
+  if (isObjectUrl) playerUrl = src;
+  void player.play().catch((err) => console.error("Playback failed", err));
+}
+
 function playAttempt(): void {
   if (!lastBlob) return;
-  void new Audio(URL.createObjectURL(lastBlob)).play();
+  play(URL.createObjectURL(lastBlob), true);
 }
 
 function playReference(): void {
   const ex = YERY_EXERCISES[exIdx];
   if (!ex.audioUrl) return;
-  void new Audio(import.meta.env.BASE_URL + ex.audioUrl).play();
+  play(import.meta.env.BASE_URL + ex.audioUrl);
 }
 
 // --- wiring ----------------------------------------------------------------

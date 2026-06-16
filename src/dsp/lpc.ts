@@ -133,7 +133,7 @@ export interface Formant {
 export function estimateFormants(
   frame: Float32Array,
   sampleRate: number,
-  order = 2 + Math.round(sampleRate / 1000),
+  order = 2 + Math.round(sampleRate / 800),
 ): Formant[] {
   const emphasised = preEmphasis(frame);
   const windowed = hammingWindow(emphasised);
