@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
-    "calibrate": "tsx scripts/calibrate-exercises.ts"
+    "calibrate": "tsx scripts/calibrate-exercises.ts",
+    "praat:compare": "tsx scripts/praat-compare.ts"
   },
   "devDependencies": {
     "audio-decode": "^3.10.2",

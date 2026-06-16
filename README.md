@@ -78,6 +78,24 @@ Reference audio is © its Wikimedia Commons contributors under the license shown
 in each clip's attribution line in the app (CC BY variants); see the generated
 file for per-file credit.
 
+## Validation against Praat
+
+```bash
+npm run praat:compare    # needs ~/.local/bin/praat_barren
+```
+
+Cross-checks our LPC tracker against Praat's Burg tracker. For each recording it
+decodes → resamples to 16 kHz → writes a WAV → runs our `findVowelNucleus`, then
+asks Praat for its mean F1/F2 over the **same** time window (standard settings:
+5 formants, 5000 Hz ceiling). Same segment, two algorithms, so the diff isolates
+the estimator. Get the headless Praat binary from
+<https://www.fon.hum.uva.nl/praat/download_linux.html> (the `…-barren` build).
+
+Latest run (12 word recordings): **mean |ΔF1| ≈ 18 Hz, mean |ΔF2| ≈ 131 Hz**.
+F1 agreement is excellent; our F2 runs ~100–130 Hz higher than Praat on average
+(likely the stronger 0.97 pre-emphasis and higher LPC order), well within the
+±280 Hz Ы tolerance but a known small bias.
+
 ## Develop
 
 ```bash
