@@ -18,7 +18,8 @@ export interface AnalysisResult {
   /** Median formants over the voiced steady portion. */
   f1: number;
   f2: number;
-  /** Fraction of frames that were voiced — a proxy for "did they sustain it". */
+  /** Fraction of frames that yielded a usable voiced formant pair — a proxy for
+   * "did they sustain it". */
   voicedRatio: number;
   frames: FrameResult[];
 }
@@ -40,7 +41,6 @@ export function analyzeBuffer(input: Float32Array, sampleRate: number): Analysis
     const frame = samples.subarray(start, start + frameSize);
     const v = analyzeVoicing(frame, sampleRate);
     if (!v.voiced) continue;
-    voicedCount++;
 
     const formants = estimateFormants(frame, sampleRate);
     if (formants.length < 2) continue;
@@ -49,6 +49,9 @@ export function analyzeBuffer(input: Float32Array, sampleRate: number): Analysis
     // Reject implausible formant pairs (noise / unstable LPC on consonantal or
     // nasal frames): F1 too low, F2 above the human range, or F2 not above F1.
     if (f1 < 150 || f2 > 3500 || f2 <= f1) continue;
+    // Count only frames that yielded a usable voiced formant pair, so
+    // voicedRatio is consistent with `frames`.
+    voicedCount++;
     frames.push({ timeSec: start / sampleRate, f0: v.f0, f1, f2, rms: v.rms });
     f1s.push(f1);
     f2s.push(f2);
@@ -187,12 +190,12 @@ export function findVowelNucleus(frames: FrameResult[], minDurationSec = 0.05): 
  * nucleus (the stressed Ы). Returns an `AnalysisResult` shaped exactly like
  * `analyzeBuffer` (so `scoreAttempt`/`drawFormantChart` are reused) plus the
  * raw `match` for UI highlighting. When no nucleus is found the result has no
- * frames so scoring reports "nothing sustained heard".
+ * frames so scoring reports "nothing sustained heard". Note: locating the
+ * nucleus is deliberately target-independent — see `findVowelNucleus`.
  */
 export function analyzeWord(
   samples: Float32Array,
   sampleRate: number,
-  _target: SoundTarget,
 ): { result: AnalysisResult; match: WindowMatch } {
   const full = analyzeBuffer(samples, sampleRate);
   const match = findVowelNucleus(full.frames);

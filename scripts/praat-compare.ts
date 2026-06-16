@@ -12,29 +12,11 @@ import { execFileSync } from "node:child_process";
 import decode from "audio-decode";
 import { analyzeBuffer, findVowelNucleus } from "../src/dsp/analyze";
 import { YERY_EXERCISES } from "../src/trainers/exercises";
-import { lowpassCoeffs, applyBiquad } from "../src/dsp/filter";
+import { resampleTo } from "../src/dsp/resample";
 
 const FS = 16000;
 const DIR = "/tmp/praat-compare";
 const PRAAT = `${process.env.HOME}/.local/bin/praat_barren`;
-
-function resample(x: Float32Array, from: number, to: number): Float32Array {
-  if (from === to) return x;
-  let f = x;
-  if (to < from) {
-    const lp = lowpassCoeffs(from, to * 0.45);
-    for (let p = 0; p < 3; p++) f = applyBiquad(f, lp);
-  }
-  const r = from / to;
-  const n = Math.floor(f.length / r);
-  const o = new Float32Array(n);
-  for (let i = 0; i < n; i++) {
-    const pos = i * r;
-    const i0 = Math.floor(pos);
-    o[i] = f[i0] * (1 - (pos - i0)) + (f[i0 + 1] ?? f[i0]) * (pos - i0);
-  }
-  return o;
-}
 
 /** Minimal 16-bit PCM mono WAV writer. */
 function writeWav(path: string, samples: Float32Array, fs: number): void {
@@ -76,7 +58,7 @@ async function main(): Promise<void> {
   for (const ex of YERY_EXERCISES) {
     if (!ex.audioUrl) continue;
     const { channelData, sampleRate } = await decode(readFileSync(`public/${ex.audioUrl}`));
-    const samples = resample(channelData[0], sampleRate, FS);
+    const samples = resampleTo(channelData[0], sampleRate, FS);
     const wav = `${DIR}/${ex.id}.wav`;
     writeWav(wav, samples, FS);
 

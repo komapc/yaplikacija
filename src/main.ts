@@ -201,7 +201,7 @@ async function endRecording(): Promise<void> {
     if (mode === "sound") {
       lastResult = analyzeBuffer(samples, sampleRate);
     } else {
-      const { result, match } = analyzeWord(samples, sampleRate, target);
+      const { result, match } = analyzeWord(samples, sampleRate);
       lastResult = result;
       if (!match.found) el.status.textContent = "";
     }

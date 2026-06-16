@@ -99,7 +99,7 @@ describe("findVowelNucleus / analyzeWord", () => {
 
   it("scores a word whose stressed vowel is a good Ы highly", () => {
     const word = concat(gain(aVowel(), 0.35), yeryVowel(), gain(uVowel(), 0.35));
-    const { result } = analyzeWord(word, FS, TARGETS.yery);
+    const { result } = analyzeWord(word, FS);
     expect(scoreAttempt(TARGETS.yery, result).overall).toBeGreaterThanOrEqual(80);
   });
 
@@ -107,13 +107,13 @@ describe("findVowelNucleus / analyzeWord", () => {
     // Loud [i] nucleus with quiet flanks: an [i]→[u] glide passes through ~1500,
     // but the held vowel is [i], so the score must stay low (the bug we fixed).
     const word = concat(iVowel(), gain(uVowel(), 0.3));
-    const { result } = analyzeWord(word, FS, TARGETS.yery);
+    const { result } = analyzeWord(word, FS);
     expect(scoreAttempt(TARGETS.yery, result).overall).toBeLessThan(60);
   });
 
   it("scores a word whose stressed vowel is [u] (not Ы) low", () => {
     const word = concat(gain(aVowel(), 0.3), uVowel());
-    const { result } = analyzeWord(word, FS, TARGETS.yery);
+    const { result } = analyzeWord(word, FS);
     expect(scoreAttempt(TARGETS.yery, result).overall).toBeLessThan(65);
   });
 
