@@ -24,11 +24,11 @@ export interface WordExercise {
 
 const SEED = { f1: TARGETS.yery.f1.center, f2: TARGETS.yery.f2.center };
 
-// Manual target overrides for words whose Ы the automatic calibration cannot
-// measure reliably — a short vowel heavily coarticulated by an adjacent stop
-// and nasal makes the formant tracker read it as fronted ([i]-like). These are
-// citation-form Ы values (lightly fronted after the coronal stop). The native
-// reference audio from calibration is still used for listening.
+// Manual target overrides for ты/дым. Their Ы genuinely measures very fronted
+// (F2 ~1900, verified with anti-aliased resampling — not a measurement artifact)
+// because the high F2 locus of the coronal stop [t]/[d] colours the short vowel.
+// That is real coarticulation, but too [i]-like to use as a teaching target, so
+// we pin a canonical, lightly-fronted citation Ы. Native reference audio is kept.
 const MANUAL_TARGETS: Record<string, { f1: number; f2: number }> = {
   ty: { f1: 350, f2: 1550 },
   dym: { f1: 350, f2: 1500 },
@@ -69,6 +69,7 @@ export const YERY_EXERCISES: WordExercise[] = [
   word("ryba", "рыба", "ryba", "[ˈrɨbə]", "fish"),
   word("mysh", "мышь", "myš", "[mɨʂ]", "mouse"),
   word("mylo", "мыло", "mylo", "[ˈmɨlə]", "soap"),
+  word("mytsya", "мыться", "myt'sja", "[ˈmɨt͡sːə]", "to wash oneself"),
   word("yazyk", "язык", "jazyk", "[jɪˈzɨk]", "tongue / language"),
 ];
 

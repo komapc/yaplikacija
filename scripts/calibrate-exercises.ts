@@ -13,6 +13,7 @@ import decode from "audio-decode";
 import { YERY_EXERCISES } from "../src/trainers/exercises";
 import { TARGETS } from "../src/trainers/targets";
 import { analyzeBuffer, findBestWindow } from "../src/dsp/analyze";
+import { lowpassCoeffs, applyBiquad } from "../src/dsp/filter";
 
 const ANALYSIS_RATE = 16000;
 const PUBLIC_DIR = "public/audio/exercises";
@@ -57,16 +58,31 @@ async function fetchAttribution(word: string): Promise<string> {
   }
 }
 
-/** Cheap linear-interpolation resampler — adequate for formant estimation. */
-function resampleLinear(x: Float32Array, from: number, to: number): Float32Array {
+/**
+ * Anti-aliased downsampler. Native recordings are 44.1/48 kHz; decimating to
+ * 16 kHz without filtering folds 8 kHz–Nyquist energy back into the formant
+ * band (aliasing), which corrupts the LPC formant estimates — most severely at
+ * the exact 48k→16k ratio of 3, where linear interpolation degenerates to naked
+ * decimation. We low-pass below the 8 kHz target Nyquist first (cascaded
+ * Butterworth sections for a steep roll-off), then interpolate. This mirrors the
+ * anti-aliasing the browser's OfflineAudioContext does in the live app.
+ */
+function resample(x: Float32Array, from: number, to: number): Float32Array {
   if (from === to) return x;
+
+  let filtered = x;
+  if (to < from) {
+    const lp = lowpassCoeffs(from, to * 0.45); // ~7.2 kHz for a 16 kHz target
+    for (let pass = 0; pass < 3; pass++) filtered = applyBiquad(filtered, lp);
+  }
+
   const ratio = from / to;
-  const n = Math.floor(x.length / ratio);
+  const n = Math.floor(filtered.length / ratio);
   const out = new Float32Array(n);
   for (let i = 0; i < n; i++) {
     const pos = i * ratio;
     const i0 = Math.floor(pos);
-    out[i] = x[i0] * (1 - (pos - i0)) + (x[i0 + 1] ?? x[i0]) * (pos - i0);
+    out[i] = filtered[i0] * (1 - (pos - i0)) + (filtered[i0 + 1] ?? filtered[i0]) * (pos - i0);
   }
   return out;
 }
@@ -85,7 +101,7 @@ async function main(): Promise<void> {
     writeFileSync(join(PUBLIC_DIR, `${ex.id}.ogg`), buf); // bundle for in-app playback
 
     const { channelData, sampleRate } = await decode(buf);
-    const samples = resampleLinear(channelData[0], sampleRate, ANALYSIS_RATE);
+    const samples = resample(channelData[0], sampleRate, ANALYSIS_RATE);
 
     const full = analyzeBuffer(samples, ANALYSIS_RATE);
     const match = findBestWindow(full.frames, TARGETS.yery);

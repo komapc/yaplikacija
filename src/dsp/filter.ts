@@ -31,6 +31,23 @@ export function highpassCoeffs(sampleRate: number, cutoffHz: number, q = Math.SQ
   return { b0: b0 / a0, b1: b1 / a0, b2: b2 / a0, a1: a1 / a0, a2: a2 / a0 };
 }
 
+/** RBJ cookbook low-pass; q = 1/√2 is a maximally-flat Butterworth response. */
+export function lowpassCoeffs(sampleRate: number, cutoffHz: number, q = Math.SQRT1_2): BiquadCoeffs {
+  const w0 = (2 * Math.PI * cutoffHz) / sampleRate;
+  const cos = Math.cos(w0);
+  const sin = Math.sin(w0);
+  const alpha = sin / (2 * q);
+
+  const b1 = 1 - cos;
+  const b0 = b1 / 2;
+  const b2 = b1 / 2;
+  const a0 = 1 + alpha;
+  const a1 = -2 * cos;
+  const a2 = 1 - alpha;
+
+  return { b0: b0 / a0, b1: b1 / a0, b2: b2 / a0, a1: a1 / a0, a2: a2 / a0 };
+}
+
 /** Direct-form-I biquad applied causally; returns a new buffer. */
 export function applyBiquad(x: Float32Array, c: BiquadCoeffs): Float32Array {
   const y = new Float32Array(x.length);
@@ -53,4 +70,9 @@ export function applyBiquad(x: Float32Array, c: BiquadCoeffs): Float32Array {
 /** Convenience: high-pass a buffer at the given cutoff (default 80 Hz). */
 export function highpassFilter(samples: Float32Array, sampleRate: number, cutoffHz = 80): Float32Array {
   return applyBiquad(samples, highpassCoeffs(sampleRate, cutoffHz));
+}
+
+/** Convenience: low-pass a buffer at the given cutoff. */
+export function lowpassFilter(samples: Float32Array, sampleRate: number, cutoffHz: number): Float32Array {
+  return applyBiquad(samples, lowpassCoeffs(sampleRate, cutoffHz));
 }

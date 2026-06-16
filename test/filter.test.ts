@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { highpassFilter } from "../src/dsp/filter";
+import { highpassFilter, lowpassFilter } from "../src/dsp/filter";
 import { sine } from "./helpers/synth";
 
 const FS = 16000;
@@ -39,5 +39,17 @@ describe("highpassFilter", () => {
   it("leaves the lowest formant region (300 Hz) largely intact", () => {
     const out = highpassFilter(sine(300, 0.5, FS, 0.8), FS);
     expect(settledPeak(out)).toBeGreaterThan(0.6);
+  });
+});
+
+describe("lowpassFilter (anti-aliasing for downsampling)", () => {
+  it("passes in-band content (1 kHz) when cutoff is 7.2 kHz", () => {
+    const out = lowpassFilter(sine(1000, 0.5, 48000, 0.8), 48000, 7200);
+    expect(settledPeak(out)).toBeGreaterThan(0.7);
+  });
+
+  it("attenuates above-Nyquist content (12 kHz) that would otherwise alias", () => {
+    const out = lowpassFilter(sine(12000, 0.5, 48000, 0.8), 48000, 7200);
+    expect(settledPeak(out)).toBeLessThan(0.3);
   });
 });

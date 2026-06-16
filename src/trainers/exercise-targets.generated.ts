@@ -7,8 +7,8 @@ export interface CalibratedTarget {
 }
 export const CALIBRATED: Record<string, CalibratedTarget> = {
   "my": {
-    "f1": 367,
-    "f2": 1489,
+    "f1": 334,
+    "f2": 1509,
     "attribution": "Сергей Сахно, Vion Nicolas / CC BY 3.0 us — File:Ru-мы.ogg, Wikimedia Commons",
     "audio": "audio/exercises/my.ogg"
   },
@@ -20,19 +20,19 @@ export const CALIBRATED: Record<string, CalibratedTarget> = {
   },
   "vy": {
     "f1": 350,
-    "f2": 1504,
+    "f2": 1493,
     "attribution": "Сергей Сахно, Vion Nicolas / CC BY 3.0 us — File:Ru-вы.ogg, Wikimedia Commons",
     "audio": "audio/exercises/vy.ogg"
   },
   "syn": {
-    "f1": 264,
-    "f2": 1525,
+    "f1": 266,
+    "f2": 1520,
     "attribution": "Wikimedia Commons / CC BY 2.0 fr — File:Ru-сын.ogg, Wikimedia Commons",
     "audio": "audio/exercises/syn.ogg"
   },
   "syr": {
-    "f1": 303,
-    "f2": 1646,
+    "f1": 305,
+    "f2": 1643,
     "attribution": "Wikimedia Commons / CC BY 2.0 fr — File:Ru-сыр.ogg, Wikimedia Commons",
     "audio": "audio/exercises/syr.ogg"
   },
@@ -43,32 +43,38 @@ export const CALIBRATED: Record<string, CalibratedTarget> = {
     "audio": "audio/exercises/dym.ogg"
   },
   "byk": {
-    "f1": 314,
-    "f2": 1599,
+    "f1": 319,
+    "f2": 1598,
     "attribution": "Wikimedia Commons / CC BY 2.0 fr — File:Ru-бык.ogg, Wikimedia Commons",
     "audio": "audio/exercises/byk.ogg"
   },
   "ryba": {
-    "f1": 344,
-    "f2": 1579,
+    "f1": 340,
+    "f2": 1536,
     "attribution": "Gulnara Streit / CC BY 2.0 fr — File:Ru-рыба.ogg, Wikimedia Commons",
     "audio": "audio/exercises/ryba.ogg"
   },
   "mysh": {
-    "f1": 279,
-    "f2": 1378,
+    "f1": 274,
+    "f2": 1382,
     "attribution": "Wikimedia Commons / CC BY 2.0 fr — File:Ru-мышь.ogg, Wikimedia Commons",
     "audio": "audio/exercises/mysh.ogg"
   },
   "mylo": {
-    "f1": 333,
-    "f2": 1466,
+    "f1": 345,
+    "f2": 1541,
     "attribution": "Wikimedia Commons / CC BY 2.0 fr — File:Ru-мыло.ogg, Wikimedia Commons",
     "audio": "audio/exercises/mylo.ogg"
   },
+  "mytsya": {
+    "f1": 263,
+    "f2": 1498,
+    "attribution": "Wikimedia Commons / CC BY 2.0 fr — File:Ru-мыться.ogg, Wikimedia Commons",
+    "audio": "audio/exercises/mytsya.ogg"
+  },
   "yazyk": {
-    "f1": 299,
-    "f2": 1752,
+    "f1": 332,
+    "f2": 1737,
     "attribution": "Wikimedia Commons / CC BY 2.0 fr — File:Ru-язык.ogg, Wikimedia Commons",
     "audio": "audio/exercises/yazyk.ogg"
   }
