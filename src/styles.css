@@ -166,8 +166,30 @@ button.ghost:disabled { opacity: 0.4; cursor: default; }
 
 .chart {
   width: 100%;
-  height: 320px;
+  height: clamp(200px, 40vh, 320px);
   background: var(--panel);
   border-radius: 16px;
   display: block;
+}
+
+/* Phone: tighten spacing and type so the whole trainer fits without scrolling. */
+@media (max-width: 480px) {
+  #app { padding: 10px; }
+  .trainer { margin-top: 12px; }
+  .glyph { font-size: 60px; }
+  .word-text { font-size: 44px; }
+  .prompt { font-size: 16px; margin: 12px 0 4px; }
+  .hint { font-size: 13px; margin-bottom: 12px; }
+  button.record { padding: 14px; font-size: 17px; min-width: 150px; }
+  button.ghost { padding: 14px 12px; }
+  .result { padding: 14px; gap: 14px; }
+  .score-ring { width: 68px; height: 68px; font-size: 22px; }
+  .chart { height: clamp(180px, 34vh, 280px); }
+}
+
+/* Short / landscape phones: keep the glyph from dominating the viewport. */
+@media (max-height: 560px) {
+  .glyph { font-size: 48px; }
+  .word-text { font-size: 38px; }
+  .chart { height: 200px; }
 }
