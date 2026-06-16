@@ -216,7 +216,7 @@ async function endRecording(): Promise<void> {
         : score.feedback;
     el.formants.textContent =
       lastResult.frames.length > 0
-        ? `Your Ы: F1 ≈ ${Math.round(lastResult.f1)} Hz, F2 ≈ ${Math.round(lastResult.f2)} Hz · target F1 ${target.f1.center}, F2 ${target.f2.center}`
+        ? `Your ${target.letter}: F1 ≈ ${Math.round(lastResult.f1)} Hz, F2 ≈ ${Math.round(lastResult.f2)} Hz · target F1 ${target.f1.center}, F2 ${target.f2.center}`
         : "";
     if (lastResult.frames.length > 0) el.status.textContent = "Try again, or move on.";
     drawFormantChart(el.chart, target, lastResult);
@@ -260,14 +260,16 @@ el.modes.querySelectorAll<HTMLButtonElement>(".mode").forEach((b) => {
   b.addEventListener("click", () => setMode(b.dataset.mode as Mode));
 });
 
-// Pointer events cover mouse + touch for the hold-to-record button.
+// Pointer events cover mouse + touch for the hold-to-record button. Capturing
+// the pointer keeps the gesture bound to the button even if the finger drifts
+// off it mid-hold, so recording doesn't stop early (no pointerleave handler).
 el.record.addEventListener("pointerdown", (e) => {
   e.preventDefault();
+  el.record.setPointerCapture(e.pointerId);
   void beginRecording();
 });
 const stop = () => void endRecording();
 el.record.addEventListener("pointerup", stop);
-el.record.addEventListener("pointerleave", stop);
 el.record.addEventListener("pointercancel", stop);
 el.play.addEventListener("click", playAttempt);
 el.reference.addEventListener("click", playReference);
