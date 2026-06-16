@@ -12,16 +12,20 @@ against a per-sound target zone, plotting it on a vowel chart.
 ## How the analysis works
 
 1. **Capture** — `getUserMedia` + `MediaRecorder`, then decode and resample to
-   16 kHz with an `OfflineAudioContext` (`src/audio/recorder.ts`).
-2. **Voicing** — normalised autocorrelation marks voiced frames and estimates
+   16 kHz with an `OfflineAudioContext` (`src/audio/recorder.ts`). The browser's
+   own noise suppression / AGC are left **off** because they distort formants.
+2. **Noise filter** — a Butterworth high-pass (80 Hz) removes DC offset, rumble,
+   handling thumps and mains hum (50/60 Hz), all below the formant range
+   (`src/dsp/filter.ts`).
+3. **Voicing** — normalised autocorrelation marks voiced frames and estimates
    F0; only voiced frames are scored (`src/dsp/voicing.ts`).
-3. **Formants** — per frame: pre-emphasis → Hamming window → autocorrelation →
+4. **Formants** — per frame: pre-emphasis → Hamming window → autocorrelation →
    Levinson-Durbin → roots of the LPC polynomial (Durand-Kerner) → formant
    frequencies (`src/dsp/lpc.ts`). The median over voiced frames gives a robust
    (F1, F2) (`src/dsp/analyze.ts`).
-4. **Scoring** — distance from each sound's target formant zone; F2 (tongue
-   front/back) is weighted higher because it is the decisive cue for both
-   sounds (`src/trainers/targets.ts`).
+5. **Scoring** — distance from each sound's target formant zone, weighted per
+   sound: F2 (tongue front/back) dominates for Ы, F1 (pharyngeal constriction)
+   dominates for Ain (`src/trainers/targets.ts`).
 
 The target formant values in `src/trainers/targets.ts` are the main tuning
 knob — adjust `center`/`tolerance` if scoring feels too strict or lenient.

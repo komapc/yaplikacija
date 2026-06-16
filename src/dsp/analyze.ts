@@ -3,6 +3,7 @@
 
 import { estimateFormants } from "./lpc";
 import { analyzeVoicing } from "./voicing";
+import { highpassFilter } from "./filter";
 
 export interface FrameResult {
   timeSec: number;
@@ -21,7 +22,10 @@ export interface AnalysisResult {
   frames: FrameResult[];
 }
 
-export function analyzeBuffer(samples: Float32Array, sampleRate: number): AnalysisResult {
+export function analyzeBuffer(input: Float32Array, sampleRate: number): AnalysisResult {
+  // Noise filter: strip DC, rumble and mains hum below the formant range.
+  const samples = highpassFilter(input, sampleRate);
+
   const frameSize = Math.round(0.025 * sampleRate); // 25 ms
   const hop = Math.round(0.010 * sampleRate); // 10 ms
   const frames: FrameResult[] = [];
