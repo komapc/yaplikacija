@@ -46,7 +46,51 @@ html, body {
 }
 .tab.active { color: var(--text); border-color: var(--accent); background: #1f2533; }
 
+.modes { display: flex; gap: 6px; }
+.mode {
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid #2a2f3d;
+  border-radius: 999px;
+  padding: 7px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.mode.active { color: #07130d; background: var(--accent); border-color: var(--accent); }
+
 .trainer { margin-top: 18px; }
+
+/* Word exercise mode */
+.word-nav { display: flex; align-items: center; gap: 12px; }
+.nav-arrow {
+  background: var(--panel);
+  color: var(--text);
+  border: none;
+  border-radius: 12px;
+  font-size: 26px;
+  line-height: 1;
+  width: 48px;
+  height: 56px;
+  cursor: pointer;
+  flex: 0 0 auto;
+}
+.nav-arrow:active { background: #232838; }
+.word-card { flex: 1; text-align: center; }
+.word-text {
+  font-size: 56px;
+  font-weight: 700;
+  line-height: 1.1;
+  background: linear-gradient(135deg, var(--accent), #6dd5ed);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.word-meta { color: var(--muted); font-size: 14px; margin-top: 4px; }
+.word-controls { display: flex; align-items: center; gap: 14px; margin-top: 14px; }
+.word-progress { color: var(--muted); font-size: 13px; }
+.attribution { color: var(--muted); font-size: 11px; line-height: 1.4; margin-top: 10px; opacity: 0.8; }
 
 .glyph-panel { display: flex; align-items: center; gap: 18px; }
 .glyph {

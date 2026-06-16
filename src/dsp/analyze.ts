@@ -4,6 +4,7 @@
 import { estimateFormants } from "./lpc";
 import { analyzeVoicing } from "./voicing";
 import { highpassFilter } from "./filter";
+import type { SoundTarget } from "../trainers/targets";
 
 export interface FrameResult {
   timeSec: number;
@@ -63,4 +64,98 @@ function median(xs: number[]): number {
   const sorted = [...xs].sort((a, b) => a - b);
   const mid = sorted.length >> 1;
   return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+}
+
+// --- word-level analysis ---------------------------------------------------
+// In a word the target sound is one segment among others, so we cannot median
+// the whole recording. Instead we locate the sustained voiced window whose
+// formants best match the target — i.e. "the learner's best moment" of the
+// target sound inside the word.
+
+const FRAME_HOP_SEC = 0.01; // matches the 10 ms hop used above
+const MAX_FRAME_GAP_SEC = 0.025; // a larger gap means we crossed an unvoiced segment
+
+export interface WindowMatch {
+  f1: number;
+  f2: number;
+  frames: FrameResult[];
+  startSec: number;
+  endSec: number;
+  found: boolean;
+}
+
+/**
+ * Slide a fixed-width window (>= minDurationSec) over the voiced frames and
+ * return the temporally-contiguous one whose median (F1,F2) is closest to the
+ * target, measured in tolerance units and weighted per the sound (so F2
+ * dominates for Ы). `found` is false when no sustained voiced window exists.
+ */
+export function findBestWindow(
+  frames: FrameResult[],
+  target: SoundTarget,
+  minDurationSec = 0.07,
+): WindowMatch {
+  const width = Math.max(3, Math.round(minDurationSec / FRAME_HOP_SEC));
+  const empty: WindowMatch = { f1: 0, f2: 0, frames: [], startSec: 0, endSec: 0, found: false };
+  if (frames.length < width) return empty;
+
+  let best: { dist: number; lo: number } | null = null;
+  for (let lo = 0; lo + width <= frames.length; lo++) {
+    const hi = lo + width - 1;
+    if (!isContiguous(frames, lo, hi)) continue;
+
+    const f1m = median(sliceField(frames, lo, hi, "f1"));
+    const f2m = median(sliceField(frames, lo, hi, "f2"));
+    const dist =
+      target.weights.f1 * (Math.abs(f1m - target.f1.center) / target.f1.tolerance) +
+      target.weights.f2 * (Math.abs(f2m - target.f2.center) / target.f2.tolerance);
+    if (best === null || dist < best.dist) best = { dist, lo };
+  }
+  if (best === null) return empty;
+
+  const win = frames.slice(best.lo, best.lo + width);
+  return {
+    f1: median(win.map((f) => f.f1)),
+    f2: median(win.map((f) => f.f2)),
+    frames: win,
+    startSec: win[0].timeSec,
+    endSec: win[win.length - 1].timeSec,
+    found: true,
+  };
+}
+
+/**
+ * Analyse a recorded WORD: run the normal frame analysis, then restrict to the
+ * best-matching window for `target`. Returns an `AnalysisResult` shaped exactly
+ * like `analyzeBuffer` (so `scoreAttempt`/`drawFormantChart` are reused) plus
+ * the raw `match` for UI highlighting. When no window matches, the result has
+ * no frames so scoring reports "nothing sustained heard".
+ */
+export function analyzeWord(
+  samples: Float32Array,
+  sampleRate: number,
+  target: SoundTarget,
+): { result: AnalysisResult; match: WindowMatch } {
+  const full = analyzeBuffer(samples, sampleRate);
+  const match = findBestWindow(full.frames, target);
+  const result: AnalysisResult = {
+    f1: match.f1,
+    f2: match.f2,
+    voicedRatio: full.voicedRatio,
+    frames: match.found ? match.frames : [],
+  };
+  return { result, match };
+}
+
+function isContiguous(frames: FrameResult[], lo: number, hi: number): boolean {
+  for (let k = lo + 1; k <= hi; k++) {
+    if (frames[k].timeSec - frames[k - 1].timeSec > FRAME_HOP_SEC + MAX_FRAME_GAP_SEC) return false;
+  }
+  return true;
+}
+
+function sliceField(frames: FrameResult[], lo: number, hi: number, field: "f1" | "f2"): number[] {
+  const out: number[] = [];
+  for (let k = lo; k <= hi; k++) out.push(frames[k][field]);
+  return out;
 }
