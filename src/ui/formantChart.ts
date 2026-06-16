@@ -39,13 +39,30 @@ export function drawFormantChart(
   const plotW = w - pad * 2;
   const plotH = h - pad * 2;
 
-  // View bounds: zoom to the target neighbourhood (a bit beyond its tolerance).
+  // View bounds: zoom to the target neighbourhood (a bit beyond its tolerance)…
   const f2Half = Math.max(target.f2.tolerance * 2.4, 520);
   const f1Half = Math.max(target.f1.tolerance * 2.4, 240);
-  const f2Min = target.f2.center - f2Half;
-  const f2Max = target.f2.center + f2Half;
-  const f1Min = Math.max(120, target.f1.center - f1Half);
-  const f1Max = target.f1.center + f1Half;
+  let f2Min = target.f2.center - f2Half;
+  let f2Max = target.f2.center + f2Half;
+  let f1Min = target.f1.center - f1Half;
+  let f1Max = target.f1.center + f1Half;
+
+  // …then expand each axis to keep nearby contrast vowels on the map (for Ы the
+  // и/у anchors must stay visible — confusing them is the whole point), without
+  // pulling in distant ones (Ain stays tight).
+  const ctxF2 = target.f2.tolerance * 2.6;
+  const ctxF1 = target.f1.tolerance * 2.6;
+  for (const a of ANCHORS) {
+    if (Math.abs(a.f2 - target.f2.center) <= ctxF2) {
+      f2Min = Math.min(f2Min, a.f2 - 130);
+      f2Max = Math.max(f2Max, a.f2 + 130);
+    }
+    if (Math.abs(a.f1 - target.f1.center) <= ctxF1) {
+      f1Min = Math.min(f1Min, a.f1 - 70);
+      f1Max = Math.max(f1Max, a.f1 + 70);
+    }
+  }
+  f1Min = Math.max(110, f1Min);
 
   const x = (f2: number) => pad + (1 - (f2 - f2Min) / (f2Max - f2Min)) * plotW;
   const y = (f1: number) => pad + ((f1 - f1Min) / (f1Max - f1Min)) * plotH;
