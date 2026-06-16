@@ -53,6 +53,26 @@ describe("scoreAttempt", () => {
     expect(near.overall).toBeGreaterThan(far.overall);
   });
 
+  it("weights F1 as the dominant cue for Ain (pharyngeal constriction)", () => {
+    const t = TARGETS.ain;
+    const f1Error = scoreAttempt(t, result(t.f1.center + t.f1.tolerance, t.f2.center));
+    const f2Error = scoreAttempt(t, result(t.f1.center, t.f2.center + t.f2.tolerance));
+    expect(f1Error.overall).toBeLessThan(f2Error.overall);
+  });
+
+  it("weights F2 as the dominant cue for Ы (tongue front/back)", () => {
+    const t = TARGETS.yery;
+    const f1Error = scoreAttempt(t, result(t.f1.center + t.f1.tolerance, t.f2.center));
+    const f2Error = scoreAttempt(t, result(t.f1.center, t.f2.center + t.f2.tolerance));
+    expect(f2Error.overall).toBeLessThan(f1Error.overall);
+  });
+
+  it("leads Ain feedback with the F1 (constriction) note when both formants miss", () => {
+    const t = TARGETS.ain;
+    const s = scoreAttempt(t, result(t.f1.center - t.f1.tolerance - 150, t.f2.center + t.f2.tolerance + 150));
+    expect(s.feedback.startsWith(t.mistakes.f1TooLow)).toBe(true);
+  });
+
   it("keeps scores within 0..100", () => {
     for (const t of Object.values(TARGETS)) {
       for (const f2 of [0, 500, t.f2.center, 3000, 8000]) {

@@ -21,6 +21,12 @@ export interface SoundTarget {
   hint: string; // articulatory cue
   f1: FormantTarget;
   f2: FormantTarget;
+  /**
+   * Relative importance of each formant for THIS sound (should sum to 1).
+   * The decisive cue differs by sound: tongue front/back (F2) defines Ы,
+   * whereas pharyngeal constriction (raised F1) defines Ain.
+   */
+  weights: { f1: number; f2: number };
   /** Direction of the most common mistake, used for targeted feedback. */
   mistakes: {
     f2TooHigh: string; // F2 above zone
@@ -42,6 +48,8 @@ export const TARGETS: Record<SoundTarget["id"], SoundTarget> = {
     // High, central vowel: low F1, mid F2 (between front [i] ~2200 and back [u] ~850).
     f1: { center: 350, tolerance: 130 },
     f2: { center: 1500, tolerance: 280 },
+    // F2 (tongue front/back) is the decisive cue: confusing «и»/«у» is an F2 error.
+    weights: { f1: 0.4, f2: 0.6 },
     mistakes: {
       f2TooHigh: "That sounded like «и» — your tongue is too far forward. Pull it back toward the throat.",
       f2TooLow: "That drifted toward «у» — relax the back of the tongue and spread the lips a little.",
@@ -60,6 +68,10 @@ export const TARGETS: Record<SoundTarget["id"], SoundTarget> = {
     // Pharyngeal constriction: raised F1, low F2 — the two move toward each other.
     f1: { center: 700, tolerance: 180 },
     f2: { center: 1150, tolerance: 250 },
+    // A consonant ([ʕ]), but voiced and continuant, so its formants are
+    // measurable. The signature of pharyngeal constriction is a RAISED F1,
+    // so F1 is the decisive cue here — the opposite weighting from Ы.
+    weights: { f1: 0.6, f2: 0.4 },
     mistakes: {
       f2TooHigh: "Too far forward / too vowel-like. Pull the tongue root back and tighten the throat.",
       f2TooLow: "Going toward a back rounded vowel — keep it tense and voiced, do not round the lips.",
@@ -88,8 +100,9 @@ export function scoreAttempt(target: SoundTarget, result: AnalysisResult): Score
 
   const f1Score = dimensionScore(result.f1, target.f1);
   const f2Score = dimensionScore(result.f2, target.f2);
-  // F2 (front/back position) is the decisive cue for both sounds, so weight it.
-  const overall = Math.round(0.4 * f1Score + 0.6 * f2Score);
+  // Weight each formant by its importance for this specific sound.
+  const { f1: w1, f2: w2 } = target.weights;
+  const overall = Math.round((w1 * f1Score + w2 * f2Score) / (w1 + w2));
 
   return { overall, f1Score, f2Score, feedback: buildFeedback(target, result, overall) };
 }
@@ -108,13 +121,19 @@ function dimensionScore(value: number, t: FormantTarget): number {
 function buildFeedback(target: SoundTarget, result: AnalysisResult, overall: number): string {
   if (overall >= 85) return "Excellent — that is right in the target zone. 🎯";
 
-  const notes: string[] = [];
-  if (result.f2 > target.f2.center + target.f2.tolerance) notes.push(target.mistakes.f2TooHigh);
-  else if (result.f2 < target.f2.center - target.f2.tolerance) notes.push(target.mistakes.f2TooLow);
+  const f1Note = dimensionNote(result.f1, target.f1, target.mistakes.f1TooHigh, target.mistakes.f1TooLow);
+  const f2Note = dimensionNote(result.f2, target.f2, target.mistakes.f2TooHigh, target.mistakes.f2TooLow);
 
-  if (result.f1 > target.f1.center + target.f1.tolerance) notes.push(target.mistakes.f1TooHigh);
-  else if (result.f1 < target.f1.center - target.f1.tolerance) notes.push(target.mistakes.f1TooLow);
+  // Lead with the note for the formant that matters most for this sound.
+  const ordered = target.weights.f1 >= target.weights.f2 ? [f1Note, f2Note] : [f2Note, f1Note];
+  const notes = ordered.filter((n): n is string => n !== null);
 
   if (notes.length === 0) return "Close — nudge it a little nearer the center of the target.";
   return notes.join(" ");
+}
+
+function dimensionNote(value: number, t: FormantTarget, tooHigh: string, tooLow: string): string | null {
+  if (value > t.center + t.tolerance) return tooHigh;
+  if (value < t.center - t.tolerance) return tooLow;
+  return null;
 }
