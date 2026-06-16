@@ -30,12 +30,29 @@ knob — adjust `center`/`tolerance` if scoring feels too strict or lenient.
 
 ```bash
 npm install
-npm run dev      # http://localhost:5173  (needs https or localhost for mic)
-npm run build    # type-check + static build into dist/
+npm run dev        # http://localhost:5173  (needs https or localhost for mic)
+npm run build      # type-check + static build into dist/
+npm test           # run the Vitest suite once
+npm run test:watch # re-run on change
 ```
 
 > Microphone access requires a secure context: `localhost` works in dev; deploy
 > over HTTPS.
+
+## Tests
+
+Vitest unit tests live in `test/`, covering the pure (browser-free) core:
+
+- `lpc.test.ts` — DSP primitives (pre-emphasis, Hamming, autocorrelation,
+  Levinson-Durbin, polynomial roots) and formant recovery, incl. the
+  positive-bandwidth regression.
+- `voicing.test.ts` — voiced/unvoiced/silence detection and f0.
+- `analyze.test.ts` — end-to-end F1/F2 recovery for Ы, Ain and [i] against
+  synthesized vowels with known formants, plus the Ы-vs-[i] discrimination.
+- `scoring.test.ts` — target scoring, mistake-specific feedback, and bounds.
+
+Audio capture (`src/audio`) and the canvas UI (`src/ui`) depend on browser-only
+APIs (`getUserMedia`, `AudioContext`, canvas) and are exercised manually.
 
 ## Android (later)
 
