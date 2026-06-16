@@ -55,7 +55,7 @@ export const CALIBRATED: Record<string, CalibratedTarget> = {
     "audio": "audio/exercises/ryba.ogg"
   },
   "mysh": {
-    "f1": 272,
+    "f1": 279,
     "f2": 1378,
     "attribution": "Wikimedia Commons / CC BY 2.0 fr — File:Ru-мышь.ogg, Wikimedia Commons",
     "audio": "audio/exercises/mysh.ogg"

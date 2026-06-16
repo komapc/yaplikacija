@@ -24,7 +24,17 @@ export interface WordExercise {
 
 const SEED = { f1: TARGETS.yery.f1.center, f2: TARGETS.yery.f2.center };
 
-// Merge the curated word with values from the calibration step (if present).
+// Manual target overrides for words whose Ы the automatic calibration cannot
+// measure reliably — a short vowel heavily coarticulated by an adjacent stop
+// and nasal makes the formant tracker read it as fronted ([i]-like). These are
+// citation-form Ы values (lightly fronted after the coronal stop). The native
+// reference audio from calibration is still used for listening.
+const MANUAL_TARGETS: Record<string, { f1: number; f2: number }> = {
+  ty: { f1: 350, f2: 1550 },
+  dym: { f1: 350, f2: 1500 },
+};
+
+// Merge the curated word with calibration output and any manual override.
 function word(
   id: string,
   text: string,
@@ -33,6 +43,7 @@ function word(
   gloss: string,
 ): WordExercise {
   const cal = CALIBRATED[id];
+  const target = MANUAL_TARGETS[id] ?? (cal ? { f1: cal.f1, f2: cal.f2 } : { ...SEED });
   return {
     id,
     text,
@@ -40,7 +51,7 @@ function word(
     ipa,
     gloss,
     audioUrl: cal?.audio ?? "",
-    target: cal ? { f1: cal.f1, f2: cal.f2 } : { ...SEED },
+    target,
     attribution: cal?.attribution ?? "",
   };
 }

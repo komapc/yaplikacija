@@ -46,6 +46,9 @@ export function analyzeBuffer(input: Float32Array, sampleRate: number): Analysis
     if (formants.length < 2) continue;
     const f1 = formants[0].freq;
     const f2 = formants[1].freq;
+    // Reject implausible formant pairs (noise / unstable LPC on consonantal or
+    // nasal frames): F1 too low, F2 above the human range, or F2 not above F1.
+    if (f1 < 150 || f2 > 3500 || f2 <= f1) continue;
     frames.push({ timeSec: start / sampleRate, f0: v.f0, f1, f2, rms: v.rms });
     f1s.push(f1);
     f2s.push(f2);
