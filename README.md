@@ -13,10 +13,11 @@ against a per-sound target zone, plotting it on a vowel chart.
 
 1. **Capture** — `getUserMedia` + `MediaRecorder`, then decode and resample to
    16 kHz with an `OfflineAudioContext` (`src/audio/recorder.ts`). The browser's
-   own noise suppression / AGC are left **off** because they distort formants.
-2. **Noise filter** — a Butterworth high-pass (80 Hz) removes DC offset, rumble,
-   handling thumps and mains hum (50/60 Hz), all below the formant range
-   (`src/dsp/filter.ts`).
+   noise suppression / echo cancellation / AGC are enabled to strip broadband
+   hiss and room noise from both the analysed and played-back audio.
+2. **Noise filter** — a Butterworth high-pass (80 Hz) additionally removes DC
+   offset, rumble, handling thumps and mains hum (50/60 Hz) below the formant
+   range (`src/dsp/filter.ts`).
 3. **Voicing** — normalised autocorrelation marks voiced frames and estimates
    F0; only voiced frames are scored (`src/dsp/voicing.ts`).
 4. **Formants** — per frame: pre-emphasis → Hamming window → autocorrelation →

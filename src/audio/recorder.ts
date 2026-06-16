@@ -10,8 +10,13 @@ export class Recorder {
   private stream: MediaStream | null = null;
 
   async start(): Promise<void> {
+    // Enable the browser's built-in voice cleanup. It removes broadband hiss /
+    // room noise that a high-pass can't, and (since it runs at capture) cleans
+    // both the analysed signal and the played-back recording. The tradeoff is a
+    // possible subtle bias to the measured formants, which the generous target
+    // tolerances absorb.
     this.stream = await navigator.mediaDevices.getUserMedia({
-      audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false },
+      audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
     });
     this.chunks = [];
     this.mediaRecorder = new MediaRecorder(this.stream);
