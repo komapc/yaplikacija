@@ -128,19 +128,74 @@ export function findBestWindow(
 }
 
 /**
- * Analyse a recorded WORD: run the normal frame analysis, then restrict to the
- * best-matching window for `target`. Returns an `AnalysisResult` shaped exactly
- * like `analyzeBuffer` (so `scoreAttempt`/`drawFormantChart` are reused) plus
- * the raw `match` for UI highlighting. When no window matches, the result has
- * no frames so scoring reports "nothing sustained heard".
+ * Locate the VOWEL NUCLEUS — the loudest sustained voiced region — WITHOUT
+ * reference to any target. This is deliberately target-independent: scoring the
+ * region that merely looks most like the target (findBestWindow) cherry-picks a
+ * transient that sweeps past the target and rewards almost any utterance. The
+ * nucleus is what the speaker actually held; in every exercise word the stressed
+ * Ы is the loudest vowel, so this finds it and then scoring can fairly judge it.
+ */
+export function findVowelNucleus(frames: FrameResult[], minDurationSec = 0.05): WindowMatch {
+  const empty: WindowMatch = { f1: 0, f2: 0, frames: [], startSec: 0, endSec: 0, found: false };
+  const minFrames = Math.max(3, Math.round(minDurationSec / FRAME_HOP_SEC));
+  if (frames.length < minFrames) return empty;
+
+  let peak = 0;
+  for (const f of frames) peak = Math.max(peak, f.rms);
+  if (peak === 0) return empty;
+  const threshold = 0.55 * peak;
+
+  // Longest contiguous run of loud (>= threshold) voiced frames.
+  let bestLo = -1;
+  let bestLen = 0;
+  let runLo = -1;
+  for (let i = 0; i < frames.length; i++) {
+    const contiguous = runLo >= 0 && frames[i].timeSec - frames[i - 1].timeSec <= FRAME_HOP_SEC + MAX_FRAME_GAP_SEC;
+    if (frames[i].rms >= threshold && (runLo < 0 || contiguous)) {
+      if (runLo < 0) runLo = i;
+      const len = i - runLo + 1;
+      if (len > bestLen) {
+        bestLen = len;
+        bestLo = runLo;
+      }
+    } else {
+      runLo = frames[i].rms >= threshold ? i : -1;
+    }
+  }
+  if (bestLo < 0 || bestLen < minFrames) return empty;
+
+  // Trim one frame off each end (the loudness ramp) when the run is long enough.
+  let s = bestLo;
+  let e = bestLo + bestLen - 1;
+  if (e - s >= minFrames + 1) {
+    s += 1;
+    e -= 1;
+  }
+  const win = frames.slice(s, e + 1);
+  return {
+    f1: median(win.map((f) => f.f1)),
+    f2: median(win.map((f) => f.f2)),
+    frames: win,
+    startSec: win[0].timeSec,
+    endSec: win[win.length - 1].timeSec,
+    found: true,
+  };
+}
+
+/**
+ * Analyse a recorded WORD: run the normal frame analysis, then score the vowel
+ * nucleus (the stressed Ы). Returns an `AnalysisResult` shaped exactly like
+ * `analyzeBuffer` (so `scoreAttempt`/`drawFormantChart` are reused) plus the
+ * raw `match` for UI highlighting. When no nucleus is found the result has no
+ * frames so scoring reports "nothing sustained heard".
  */
 export function analyzeWord(
   samples: Float32Array,
   sampleRate: number,
-  target: SoundTarget,
+  _target: SoundTarget,
 ): { result: AnalysisResult; match: WindowMatch } {
   const full = analyzeBuffer(samples, sampleRate);
-  const match = findBestWindow(full.frames, target);
+  const match = findVowelNucleus(full.frames);
   const result: AnalysisResult = {
     f1: match.f1,
     f2: match.f2,

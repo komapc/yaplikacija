@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { analyzeBuffer, findBestWindow, analyzeWord } from "../src/dsp/analyze";
+import { analyzeBuffer, findBestWindow, findVowelNucleus, analyzeWord } from "../src/dsp/analyze";
 import { scoreAttempt, TARGETS } from "../src/trainers/targets";
 import { synthVowel } from "./helpers/synth";
 
@@ -17,10 +17,17 @@ function concat(...parts: Float32Array[]): Float32Array {
   return out;
 }
 
-// Pseudo-word [a]-Ы-[u]: only the middle segment is a real Ы (F2 ~1500).
+/** Scale amplitude — unstressed vowels are quieter than the stressed nucleus. */
+function gain(x: Float32Array, g: number): Float32Array {
+  const out = new Float32Array(x.length);
+  for (let i = 0; i < x.length; i++) out[i] = x[i] * g;
+  return out;
+}
+
 const aVowel = () => synthVowel(120, [{ f: 750, bw: 90 }, { f: 1300, bw: 110 }], 0.4, FS);
 const yeryVowel = () => synthVowel(120, [{ f: 350, bw: 70 }, { f: 1500, bw: 90 }], 0.4, FS);
 const uVowel = () => synthVowel(120, [{ f: 320, bw: 80 }, { f: 850, bw: 100 }], 0.4, FS);
+const iVowel = () => synthVowel(120, [{ f: 300, bw: 60 }, { f: 2200, bw: 110 }], 0.4, FS);
 
 interface VowelCase {
   name: string;
@@ -77,34 +84,41 @@ describe("analyzeBuffer", () => {
   });
 });
 
-describe("findBestWindow / analyzeWord", () => {
-  it("locates the Ы segment inside [a]-Ы-[u]", () => {
-    const word = concat(aVowel(), yeryVowel(), uVowel());
-    const full = analyzeBuffer(word, FS);
-    const match = findBestWindow(full.frames, TARGETS.yery);
+describe("findVowelNucleus / analyzeWord", () => {
+  it("locks onto the loud (stressed) vowel, ignoring quiet flanking vowels", () => {
+    // Quiet [a], loud Ы nucleus, quiet [u] — like a stressed Ы between others.
+    const word = concat(gain(aVowel(), 0.35), yeryVowel(), gain(uVowel(), 0.35));
+    const match = findVowelNucleus(analyzeBuffer(word, FS).frames);
 
     expect(match.found).toBe(true);
-    expect(Math.abs(match.f2 - 1500)).toBeLessThan(150);
-    // The match should sit in the middle segment (0.4–0.8 s).
+    expect(Math.abs(match.f2 - 1500)).toBeLessThan(160);
     const mid = (match.startSec + match.endSec) / 2;
     expect(mid).toBeGreaterThan(0.4);
     expect(mid).toBeLessThan(0.8);
   });
 
-  it("scores a word containing a good Ы highly", () => {
-    const word = concat(aVowel(), yeryVowel(), uVowel());
+  it("scores a word whose stressed vowel is a good Ы highly", () => {
+    const word = concat(gain(aVowel(), 0.35), yeryVowel(), gain(uVowel(), 0.35));
     const { result } = analyzeWord(word, FS, TARGETS.yery);
     expect(scoreAttempt(TARGETS.yery, result).overall).toBeGreaterThanOrEqual(80);
   });
 
-  it("scores a word with no Ы (only [u] and [a]) low", () => {
-    const word = concat(uVowel(), aVowel());
+  it("does NOT reward a wrong vowel even when a transition sweeps past Ы", () => {
+    // Loud [i] nucleus with quiet flanks: an [i]→[u] glide passes through ~1500,
+    // but the held vowel is [i], so the score must stay low (the bug we fixed).
+    const word = concat(iVowel(), gain(uVowel(), 0.3));
     const { result } = analyzeWord(word, FS, TARGETS.yery);
-    expect(scoreAttempt(TARGETS.yery, result).overall).toBeLessThan(70);
+    expect(scoreAttempt(TARGETS.yery, result).overall).toBeLessThan(60);
+  });
+
+  it("scores a word whose stressed vowel is [u] (not Ы) low", () => {
+    const word = concat(gain(aVowel(), 0.3), uVowel());
+    const { result } = analyzeWord(word, FS, TARGETS.yery);
+    expect(scoreAttempt(TARGETS.yery, result).overall).toBeLessThan(65);
   });
 
   it("reports found=false for silence", () => {
     const full = analyzeBuffer(new Float32Array(FS), FS);
-    expect(findBestWindow(full.frames, TARGETS.yery).found).toBe(false);
+    expect(findVowelNucleus(full.frames).found).toBe(false);
   });
 });

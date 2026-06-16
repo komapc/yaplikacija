@@ -41,12 +41,20 @@ knob — adjust `center`/`tolerance` if scoring feels too strict or lenient.
 ### Word exercises
 
 In word mode a recording contains other phonemes, so instead of medianing the
-whole clip we **locate the target**: `findBestWindow` (`src/dsp/analyze.ts`)
-slides a sustained (~70 ms) window over the voiced frames and picks the one
-whose median (F1,F2) best matches the Ы target (weighted, F2-dominant).
-`analyzeWord` returns that window as a normal `AnalysisResult`, so the existing
-scoring and chart are reused. It is intentionally lenient — it finds your best
-moment of Ы and cannot verify the whole word (that would need ASR).
+whole clip we score the **vowel nucleus**: `findVowelNucleus`
+(`src/dsp/analyze.ts`) finds the loudest sustained voiced region — the stressed
+Ы in every exercise word — **without reference to the target**, and grades that.
+This is deliberate: an earlier version used `findBestWindow` (the window closest
+to the target), which cherry-picked any transient sweeping past the target and
+scored almost anything 90 %+. Grading the nucleus instead means a wrong vowel is
+measured as the wrong vowel and scores low. `analyzeWord` returns the nucleus as
+a normal `AnalysisResult`, so scoring and the chart are reused.
+
+`findBestWindow` is still used by the calibration step (where we *do* want to
+locate the known-correct Ы in a native recording). It still scores only the Ы,
+not the whole word (that would need ASR). The energy-nucleus is reliable for the
+monosyllabic words; for multisyllabic ones (рыба, мыться…) the loudest region is
+not always exactly the Ы, so those scores are looser.
 
 The word list lives in `src/trainers/exercises.ts`. Each word's expected Ы
 formants are **calibrated from a native recording** by the same DSP that grades
