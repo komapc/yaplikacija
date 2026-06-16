@@ -121,6 +121,15 @@ describe("findVowelNucleus / analyzeWord", () => {
     const full = analyzeBuffer(new Float32Array(FS), FS);
     expect(findVowelNucleus(full.frames).found).toBe(false);
   });
+
+  it("scores a short Ы padded with long silence (gate is the nucleus, not whole-clip ratio)", () => {
+    const silence = new Float32Array(Math.round(1.5 * FS));
+    const word = concat(silence, yeryVowel(), silence); // lots of lead-in/out silence
+    const { result, match } = analyzeWord(word, FS);
+    expect(match.found).toBe(true);
+    expect(result.voicedRatio).toBe(1); // not dragged below the 0.15 gate by silence
+    expect(scoreAttempt(TARGETS.yery, result).overall).toBeGreaterThanOrEqual(80);
+  });
 });
 
 // Direct unit tests of the nucleus run-finder on hand-built frame sequences,

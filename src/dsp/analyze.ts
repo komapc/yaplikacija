@@ -202,7 +202,10 @@ export function analyzeWord(
   const result: AnalysisResult = {
     f1: match.f1,
     f2: match.f2,
-    voicedRatio: full.voicedRatio,
+    // In word mode the "did they produce it" gate is whether a sustained vowel
+    // nucleus was found — NOT the whole-recording voiced ratio, which is dragged
+    // down by the lead-in/out silence around a short word.
+    voicedRatio: match.found ? 1 : 0,
     frames: match.found ? match.frames : [],
   };
   return { result, match };
