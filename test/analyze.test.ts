@@ -122,3 +122,29 @@ describe("findVowelNucleus / analyzeWord", () => {
     expect(findVowelNucleus(full.frames).found).toBe(false);
   });
 });
+
+// Direct unit tests of the nucleus run-finder on hand-built frame sequences,
+// covering the tricky cases: a run that starts after a time gap, and quiet
+// (unstressed) frames that must be excluded by the loudness threshold.
+describe("findVowelNucleus run-finder", () => {
+  const F = (timeSec: number, rms: number, f1 = 350, f2 = 1500) => ({ timeSec, f0: 120, f1, f2, rms });
+
+  it("picks the longer loud run even when it starts after a time gap", () => {
+    const frames = [];
+    for (let i = 0; i < 3; i++) frames.push(F(i * 0.01, 0.3, 360, 1520)); // short run
+    for (let i = 0; i < 9; i++) frames.push(F(0.2 + i * 0.01, 0.3, 340, 1480)); // long run after gap
+    const m = findVowelNucleus(frames, 0.03);
+    expect(m.found).toBe(true);
+    expect(m.startSec).toBeGreaterThanOrEqual(0.2); // landed in the long run
+    expect(Math.abs(m.f2 - 1480)).toBeLessThan(30);
+  });
+
+  it("excludes quiet frames below the loudness threshold (only scores the stressed vowel)", () => {
+    const frames = [];
+    for (let i = 0; i < 8; i++) frames.push(F(i * 0.01, 0.1, 700, 1100)); // quiet wrong-vowel
+    for (let i = 0; i < 8; i++) frames.push(F(0.08 + i * 0.01, 0.4, 350, 1500)); // loud Ы
+    const m = findVowelNucleus(frames, 0.04);
+    expect(m.found).toBe(true);
+    expect(Math.abs(m.f2 - 1500)).toBeLessThan(40);
+  });
+});
