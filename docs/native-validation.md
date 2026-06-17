@@ -46,6 +46,25 @@ vowels correctly (ы 98, others ≤48) and matches Praat. Changing it now would 
 regression risk for no measured benefit (an experimental "loudest-window" nucleus
 tried during this investigation made false-accepts *worse*). Left as-is.
 
+## Distribution test (60 takes) → non-compensatory scoring
+
+A second native batch (20× Ы, 20× У, 10× each сын/сун/сэн; `samples/dist/`,
+`npm run dist-analyze`) split into per-take Звук-mode scores exposed two issues:
+
+1. **[e]/сэн scored as ы (~78).** [e] has ы-like F2 (~1700) but a much higher
+   **F1 (~452 vs ы ~300–340)**. The old **weighted-average** scoring let the good
+   F2 mask the wrong F1.
+2. **Back-vowel F2 instability.** [u] (У) read bimodally (~570 *or* ~2200) — LPC
+   merging F1/F2 on back vowels — so a few takes land mid and mis-score. This is
+   a measurement limit, only partly addressable.
+
+Fix: **combine F1/F2 non-compensatively** (weighted Euclidean distance in
+tolerance units, not a weighted average), and tighten the Ы F1 zone (F1 is the
+cue that separates ы from open vowels). Result on the labelled set —
+**Ы 76 / сын 84 (pass); У 11, сун 30, сэн 55, и/о/а ≤46 (reject)** — clean
+separation with no сэн take reaching 70. A handful of back-vowel measurement
+outliers still slip through (~5–10%).
+
 ## Known limitation / future work
 
 Absolute F2 is **speaker-dependent**: validated on one (male-range) speaker.

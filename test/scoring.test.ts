@@ -85,6 +85,16 @@ describe("scoreAttempt", () => {
     expect(scoreAttempt(t, result(350, 2040, 1, 2800)).f2Score).toBeLessThan(50);
   });
 
+  it("rejects [e]/сэн (good F2 cannot mask a high F1 — non-compensatory)", () => {
+    const t = TARGETS.yery;
+    // [e]: ы-like F2 (~1700) but a much higher F1 (~452) — must not pass as ы.
+    const e = scoreAttempt(t, result(452, 1700)).overall;
+    const yy = scoreAttempt(t, result(335, 1450)).overall;
+    expect(yy).toBeGreaterThanOrEqual(75);
+    expect(e).toBeLessThan(60);
+    expect(e).toBeLessThan(yy - 15);
+  });
+
   it("keeps scores within 0..100", () => {
     for (const t of Object.values(TARGETS)) {
       for (const f2 of [0, 500, t.f2.center, 3000, 8000]) {

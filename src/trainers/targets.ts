@@ -52,9 +52,10 @@ export const TARGETS: Record<SoundTarget["id"], SoundTarget> = {
     language: "Russian",
     prompt: "Say a long «ы» — as in мы, ты, сын.",
     hint: "Like «и», but pull the tongue back toward your throat and keep lips unrounded. Smile slightly, do not pucker.",
-    // High, central vowel: low F1, mid F2 (between front [i] ~2200 and back [u] ~850).
-    f1: { center: 350, tolerance: 90 },
-    f2: { center: 1500, tolerance: 200 },
+    // High, central vowel: low F1 (tight — F1 is what separates ы from open
+    // vowels like [e]/сэн), mid F2 between front [i] ~2200 and back [u] ~850.
+    f1: { center: 340, tolerance: 65 },
+    f2: { center: 1450, tolerance: 230 },
     // F2 (tongue front/back) is the decisive cue: confusing «и»/«у» is an F2 error.
     weights: { f1: 0.4, f2: 0.6 },
     // NOTE: F2/F3-ratio scoring (speaker normalisation) was tried and reverted —
@@ -126,9 +127,15 @@ export function scoreAttempt(target: SoundTarget, result: AnalysisResult): Score
   const t = adaptTarget(target, result);
   const f1Score = dimensionScore(result.f1, t.f1);
   const f2Score = dimensionScore(result.f2, t.f2);
-  // Weight each formant by its importance for this specific sound.
+  // Combine the two formants NON-compensatively (weighted Euclidean distance in
+  // tolerance units): being off in either formant lowers the score. A plain
+  // weighted average let a good F2 mask a wrong F1 — e.g. [e] (сэн), which has
+  // ы-like F2 but a much higher F1, scored as ы.
   const { f1: w1, f2: w2 } = t.weights;
-  const overall = Math.round((w1 * f1Score + w2 * f2Score) / (w1 + w2));
+  const d1 = (result.f1 - t.f1.center) / t.f1.tolerance;
+  const d2 = (result.f2 - t.f2.center) / t.f2.tolerance;
+  const dist = Math.sqrt((w1 * d1 * d1 + w2 * d2 * d2) / (w1 + w2));
+  const overall = Math.max(0, Math.round(100 * (1 - dist / 3)));
 
   return { overall, f1Score, f2Score, feedback: buildFeedback(t, result, overall) };
 }
