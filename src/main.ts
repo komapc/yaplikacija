@@ -37,6 +37,9 @@ function open(id: string): void {
   const tab = TABS.find((t) => t.id === id)!;
   current = tab.make(recorder);
   viewEl.appendChild(current.element);
+  // The element is now laid out — let views redraw their chart at real size
+  // (charts drawn during mount, while detached, are skipped at zero size).
+  requestAnimationFrame(() => window.dispatchEvent(new Event("resize")));
   activeId = id;
   tabsEl.querySelectorAll<HTMLElement>(".tab").forEach((b) => b.classList.toggle("active", b.dataset.id === id));
 }

@@ -30,6 +30,9 @@ export function drawFormantChart(
   const dpr = window.devicePixelRatio || 1;
   const w = canvas.clientWidth;
   const h = canvas.clientHeight;
+  // Not laid out yet (e.g. drawn before being attached to the DOM): bail out.
+  // Otherwise the plot dimensions go negative and ctx.ellipse() throws.
+  if (w <= 0 || h <= 0) return;
   canvas.width = w * dpr;
   canvas.height = h * dpr;
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
