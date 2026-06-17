@@ -27,6 +27,13 @@ export interface SoundTarget {
    * whereas pharyngeal constriction (raised F1) defines Ain.
    */
   weights: { f1: number; f2: number };
+  /**
+   * Optional target F2/F3 ratio. When set and the attempt has a usable F3, the
+   * F2 target centre is taken as `f2f3 × F3` instead of the absolute `f2.center`
+   * — a speaker-normalised "frontness" target (the ratio cancels vocal-tract
+   * length, so the same value works for men/women/children without calibration).
+   */
+  f2f3?: number;
   /** Direction of the most common mistake, used for targeted feedback. */
   mistakes: {
     f2TooHigh: string; // F2 above zone
@@ -50,6 +57,8 @@ export const TARGETS: Record<SoundTarget["id"], SoundTarget> = {
     f2: { center: 1500, tolerance: 200 },
     // F2 (tongue front/back) is the decisive cue: confusing «и»/«у» is an F2 error.
     weights: { f1: 0.4, f2: 0.6 },
+    // Ы sits ~central between [i] and [u]; F2/F3 ≈ 0.6 across vocal-tract sizes.
+    f2f3: 0.6,
     mistakes: {
       f2TooHigh: "That sounded like «и» — your tongue is too far forward. Pull it back toward the throat.",
       f2TooLow: "That drifted toward «у» — relax the back of the tongue and spread the lips a little.",
@@ -88,6 +97,20 @@ export interface Score {
   feedback: string;
 }
 
+/**
+ * Speaker-normalise the F2 target: when the sound defines a target F2/F3 ratio
+ * and the attempt has a usable F3, place the F2 target at `f2f3 × F3`. This
+ * cancels vocal-tract length, so a man, woman or child are all judged against
+ * the right F2 for their own tract — no per-user calibration. Falls back to the
+ * absolute F2 centre when no F3 is available.
+ */
+export function adaptTarget(target: SoundTarget, result: { f3: number }): SoundTarget {
+  if (target.f2f3 && result.f3 > 0) {
+    return { ...target, f2: { ...target.f2, center: Math.round(target.f2f3 * result.f3) } };
+  }
+  return target;
+}
+
 export function scoreAttempt(target: SoundTarget, result: AnalysisResult): Score {
   if (result.voicedRatio < 0.15 || result.frames.length < 3) {
     return {
@@ -98,13 +121,14 @@ export function scoreAttempt(target: SoundTarget, result: AnalysisResult): Score
     };
   }
 
-  const f1Score = dimensionScore(result.f1, target.f1);
-  const f2Score = dimensionScore(result.f2, target.f2);
+  const t = adaptTarget(target, result);
+  const f1Score = dimensionScore(result.f1, t.f1);
+  const f2Score = dimensionScore(result.f2, t.f2);
   // Weight each formant by its importance for this specific sound.
-  const { f1: w1, f2: w2 } = target.weights;
+  const { f1: w1, f2: w2 } = t.weights;
   const overall = Math.round((w1 * f1Score + w2 * f2Score) / (w1 + w2));
 
-  return { overall, f1Score, f2Score, feedback: buildFeedback(target, result, overall) };
+  return { overall, f1Score, f2Score, feedback: buildFeedback(t, result, overall) };
 }
 
 function dimensionScore(value: number, t: FormantTarget): number {

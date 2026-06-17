@@ -2,79 +2,105 @@
 export interface CalibratedTarget {
   f1: number;
   f2: number;
+  f3: number;
+  ratio: number;
   attribution: string;
   audio: string;
 }
 export const CALIBRATED: Record<string, CalibratedTarget> = {
   "my": {
-    "f1": 334,
-    "f2": 1509,
+    "f1": 277,
+    "f2": 1606,
+    "f3": 2174,
+    "ratio": 0.739,
     "attribution": "Сергей Сахно, Vion Nicolas / CC BY 3.0 us — File:Ru-мы.ogg, Wikimedia Commons",
     "audio": "audio/exercises/my.ogg"
   },
   "ty": {
     "f1": 350,
     "f2": 1500,
+    "f3": 2204,
+    "ratio": 0.6,
     "attribution": "Сергей Сахно, Vion Nicolas / CC BY 3.0 us — File:Ru-ты.ogg, Wikimedia Commons",
     "audio": "audio/exercises/ty.ogg"
   },
   "vy": {
-    "f1": 350,
-    "f2": 1493,
+    "f1": 344,
+    "f2": 1525,
+    "f3": 2222,
+    "ratio": 0.686,
     "attribution": "Сергей Сахно, Vion Nicolas / CC BY 3.0 us — File:Ru-вы.ogg, Wikimedia Commons",
     "audio": "audio/exercises/vy.ogg"
   },
   "syn": {
-    "f1": 266,
+    "f1": 241,
     "f2": 1520,
+    "f3": 2666,
+    "ratio": 0.57,
     "attribution": "Wikimedia Commons / CC BY 2.0 fr — File:Ru-сын.ogg, Wikimedia Commons",
     "audio": "audio/exercises/syn.ogg"
   },
   "syr": {
-    "f1": 305,
-    "f2": 1643,
+    "f1": 315,
+    "f2": 1668,
+    "f3": 2484,
+    "ratio": 0.671,
     "attribution": "Wikimedia Commons / CC BY 2.0 fr — File:Ru-сыр.ogg, Wikimedia Commons",
     "audio": "audio/exercises/syr.ogg"
   },
   "dym": {
     "f1": 350,
     "f2": 1500,
+    "f3": 2711,
+    "ratio": 0.6,
     "attribution": "Wikimedia Commons / CC BY 2.0 fr — File:Ru-дым.ogg, Wikimedia Commons",
     "audio": "audio/exercises/dym.ogg"
   },
   "byk": {
     "f1": 319,
-    "f2": 1598,
+    "f2": 1404,
+    "f3": 2693,
+    "ratio": 0.521,
     "attribution": "Wikimedia Commons / CC BY 2.0 fr — File:Ru-бык.ogg, Wikimedia Commons",
     "audio": "audio/exercises/byk.ogg"
   },
   "ryba": {
-    "f1": 340,
-    "f2": 1536,
+    "f1": 350,
+    "f2": 1500,
+    "f3": 2640,
+    "ratio": 0.6,
     "attribution": "Gulnara Streit / CC BY 2.0 fr — File:Ru-рыба.ogg, Wikimedia Commons",
     "audio": "audio/exercises/ryba.ogg"
   },
   "mysh": {
-    "f1": 274,
-    "f2": 1382,
+    "f1": 350,
+    "f2": 1500,
+    "f3": 2917,
+    "ratio": 0.6,
     "attribution": "Wikimedia Commons / CC BY 2.0 fr — File:Ru-мышь.ogg, Wikimedia Commons",
     "audio": "audio/exercises/mysh.ogg"
   },
   "mylo": {
-    "f1": 345,
-    "f2": 1541,
+    "f1": 342,
+    "f2": 1615,
+    "f3": 2472,
+    "ratio": 0.653,
     "attribution": "Wikimedia Commons / CC BY 2.0 fr — File:Ru-мыло.ogg, Wikimedia Commons",
     "audio": "audio/exercises/mylo.ogg"
   },
   "mytsya": {
-    "f1": 263,
-    "f2": 1498,
+    "f1": 350,
+    "f2": 1500,
+    "f3": 2827,
+    "ratio": 0.6,
     "attribution": "Wikimedia Commons / CC BY 2.0 fr — File:Ru-мыться.ogg, Wikimedia Commons",
     "audio": "audio/exercises/mytsya.ogg"
   },
   "yazyk": {
-    "f1": 332,
-    "f2": 1737,
+    "f1": 350,
+    "f2": 1500,
+    "f3": 2576,
+    "ratio": 0.6,
     "attribution": "Wikimedia Commons / CC BY 2.0 fr — File:Ru-язык.ogg, Wikimedia Commons",
     "audio": "audio/exercises/yazyk.ogg"
   }

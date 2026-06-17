@@ -7,8 +7,12 @@ exists and [ROADMAP.md](ROADMAP.md) for plans.
 
 - **Privacy & cost** — 100% client-side. No backend, no audio upload, no API
   keys, no per-use cost; works offline once loaded; free static hosting.
-- **Validated DSP** — the formant tracker agrees with Praat to ~18 Hz on F1 and
-  ~131 Hz on F2 (see `praat:compare`). F1 is essentially reference-accurate.
+- **Validated DSP** — the formant tracker agrees with Praat to ~15 Hz on F1,
+  ~105 Hz on F2, ~86 Hz on F3 (see `praat:compare`, `validate:f3`).
+- **Speaker-independent Ы, no calibration** — the Ы F2 target is a ratio of the
+  speaker's own F3 (`f2f3 ≈ 0.6`), which cancels vocal-tract length so men, women
+  and children are graded fairly. ~2.4× more stable than absolute F2 under a
+  simulated tract shift. Addresses the biggest accuracy/fairness gap.
 - **Self-consistent scoring** — per-word targets are measured by the *same*
   tracker that grades the learner, so systematic estimator bias (e.g. the F2
   offset vs Praat) is common-mode and cancels.
@@ -17,9 +21,9 @@ exists and [ROADMAP.md](ROADMAP.md) for plans.
 - **Discriminative word scoring** — grading the energy-based vowel nucleus
   (target-independent) means a wrong vowel scores low; an earlier
   best-matching-window approach cherry-picked and scored almost anything 90%+.
-- **Test + CI discipline** — 43 tests gate every deploy; a Praat regression
-  tool exists; a synthetic-vowel harness validates the estimator against ground
-  truth.
+- **Test + CI discipline** — 45 tests gate every deploy; Praat regression tools
+  (`praat:compare`, `validate:f3`) exist; a synthetic-vowel harness validates the
+  estimator against ground truth.
 
 ## Weaknesses & known limitations
 

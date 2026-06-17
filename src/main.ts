@@ -1,7 +1,7 @@
 import "./styles.css";
 import { Recorder } from "./audio/recorder";
 import { analyzeBuffer, analyzeWord, type AnalysisResult } from "./dsp/analyze";
-import { TARGETS, scoreAttempt, type SoundTarget } from "./trainers/targets";
+import { TARGETS, scoreAttempt, adaptTarget, type SoundTarget } from "./trainers/targets";
 import { YERY_EXERCISES, exerciseTarget } from "./trainers/exercises";
 import { drawFormantChart } from "./ui/formantChart";
 
@@ -219,7 +219,8 @@ async function endRecording(): Promise<void> {
         ? `Your ${target.letter}: F1 ≈ ${Math.round(lastResult.f1)} Hz, F2 ≈ ${Math.round(lastResult.f2)} Hz · target F1 ${target.f1.center}, F2 ${target.f2.center}`
         : "";
     if (lastResult.frames.length > 0) el.status.textContent = "Try again, or move on.";
-    drawFormantChart(el.chart, target, lastResult);
+    // Draw the speaker-adapted target (F2 zone follows the learner's own F3).
+    drawFormantChart(el.chart, adaptTarget(target, lastResult), lastResult);
   } catch (err) {
     el.status.textContent = "Something went wrong analyzing the audio.";
     console.error(err);
@@ -275,7 +276,10 @@ el.play.addEventListener("click", playAttempt);
 el.reference.addEventListener("click", playReference);
 el.prevWord.addEventListener("click", () => selectExercise(exIdx - 1));
 el.nextWord.addEventListener("click", () => selectExercise(exIdx + 1));
-window.addEventListener("resize", () => drawFormantChart(el.chart, activeTarget(), lastResult));
+window.addEventListener("resize", () => {
+  const t = lastResult ? adaptTarget(activeTarget(), lastResult) : activeTarget();
+  drawFormantChart(el.chart, t, lastResult);
+});
 
 renderModes();
 setMode("sound");

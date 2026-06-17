@@ -40,6 +40,13 @@ There are two modes:
 5. **Scoring** — distance from each sound's target formant zone, weighted per
    sound: F2 (tongue front/back) dominates for Ы, F1 (pharyngeal constriction)
    dominates for Ain (`src/trainers/targets.ts`).
+6. **Speaker normalisation (Ы)** — formants scale with vocal-tract length, so a
+   fixed Hz target would mis-grade women/children. The Ы F2 target is instead
+   set as a **ratio of the speaker's own F3** (`f2f3 ≈ 0.6`, applied by
+   `adaptTarget`): F2/F3 cancels tract length, giving speaker-independent scoring
+   with **no per-user calibration**. Validated against Praat (F3 within ~86 Hz;
+   the ratio is ~2.4× more stable than absolute F2 under a simulated tract shift)
+   via `npm run validate:f3`.
 
 The target formant values in `src/trainers/targets.ts` are the main tuning
 knob — adjust `center`/`tolerance` if scoring feels too strict or lenient.

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { analyzeBuffer, findBestWindow, findVowelNucleus, analyzeWord } from "../src/dsp/analyze";
+import { analyzeBuffer, findVowelNucleus, analyzeWord } from "../src/dsp/analyze";
 import { scoreAttempt, TARGETS } from "../src/trainers/targets";
 import { synthVowel } from "./helpers/synth";
 
@@ -24,10 +24,11 @@ function gain(x: Float32Array, g: number): Float32Array {
   return out;
 }
 
-const aVowel = () => synthVowel(120, [{ f: 750, bw: 90 }, { f: 1300, bw: 110 }], 0.4, FS);
-const yeryVowel = () => synthVowel(120, [{ f: 350, bw: 70 }, { f: 1500, bw: 90 }], 0.4, FS);
-const uVowel = () => synthVowel(120, [{ f: 320, bw: 80 }, { f: 850, bw: 100 }], 0.4, FS);
-const iVowel = () => synthVowel(120, [{ f: 300, bw: 60 }, { f: 2200, bw: 110 }], 0.4, FS);
+// Three formants each (incl. F3) so the F2/F3-ratio scoring path is exercised.
+const aVowel = () => synthVowel(120, [{ f: 750, bw: 90 }, { f: 1300, bw: 110 }, { f: 2600, bw: 140 }], 0.4, FS);
+const yeryVowel = () => synthVowel(120, [{ f: 350, bw: 70 }, { f: 1500, bw: 90 }, { f: 2500, bw: 130 }], 0.4, FS);
+const uVowel = () => synthVowel(120, [{ f: 320, bw: 80 }, { f: 850, bw: 100 }, { f: 2400, bw: 140 }], 0.4, FS);
+const iVowel = () => synthVowel(120, [{ f: 300, bw: 60 }, { f: 2200, bw: 110 }, { f: 2900, bw: 150 }], 0.4, FS);
 
 interface VowelCase {
   name: string;
@@ -136,7 +137,7 @@ describe("findVowelNucleus / analyzeWord", () => {
 // covering the tricky cases: a run that starts after a time gap, and quiet
 // (unstressed) frames that must be excluded by the loudness threshold.
 describe("findVowelNucleus run-finder", () => {
-  const F = (timeSec: number, rms: number, f1 = 350, f2 = 1500) => ({ timeSec, f0: 120, f1, f2, rms });
+  const F = (timeSec: number, rms: number, f1 = 350, f2 = 1500) => ({ timeSec, f0: 120, f1, f2, f3: 2500, rms });
 
   it("picks the longer loud run even when it starts after a time gap", () => {
     const frames = [];

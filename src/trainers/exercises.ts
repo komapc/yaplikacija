@@ -19,19 +19,21 @@ export interface WordExercise {
   gloss: string;
   audioUrl: string; // relative; "" when no reference recording is available
   target: { f1: number; f2: number }; // expected Ы formants (calibrated or seed)
+  ratio: number; // expected F2/F3 (speaker-normalised frontness target)
   attribution: string; // source + license for the reference audio
 }
 
 const SEED = { f1: TARGETS.yery.f1.center, f2: TARGETS.yery.f2.center };
+const SEED_RATIO = TARGETS.yery.f2f3 ?? 0.6;
 
 // Manual target overrides for ты/дым. Their Ы genuinely measures very fronted
 // (F2 ~1900, verified with anti-aliased resampling — not a measurement artifact)
 // because the high F2 locus of the coronal stop [t]/[d] colours the short vowel.
 // That is real coarticulation, but too [i]-like to use as a teaching target, so
 // we pin a canonical, lightly-fronted citation Ы. Native reference audio is kept.
-const MANUAL_TARGETS: Record<string, { f1: number; f2: number }> = {
-  ty: { f1: 350, f2: 1550 },
-  dym: { f1: 350, f2: 1500 },
+const MANUAL_TARGETS: Record<string, { f1: number; f2: number; ratio: number }> = {
+  ty: { f1: 350, f2: 1550, ratio: SEED_RATIO },
+  dym: { f1: 350, f2: 1500, ratio: SEED_RATIO },
 };
 
 // Merge the curated word with calibration output and any manual override.
@@ -43,7 +45,9 @@ function word(
   gloss: string,
 ): WordExercise {
   const cal = CALIBRATED[id];
-  const target = MANUAL_TARGETS[id] ?? (cal ? { f1: cal.f1, f2: cal.f2 } : { ...SEED });
+  const manual = MANUAL_TARGETS[id];
+  const target = manual ? { f1: manual.f1, f2: manual.f2 } : cal ? { f1: cal.f1, f2: cal.f2 } : { ...SEED };
+  const ratio = manual?.ratio ?? cal?.ratio ?? SEED_RATIO;
   return {
     id,
     text,
@@ -52,6 +56,7 @@ function word(
     gloss,
     audioUrl: cal?.audio ?? "",
     target,
+    ratio,
     attribution: cal?.attribution ?? "",
   };
 }
@@ -84,5 +89,6 @@ export function exerciseTarget(ex: WordExercise): SoundTarget {
     ...base,
     f1: { ...base.f1, center: ex.target.f1 },
     f2: { ...base.f2, center: ex.target.f2 },
+    f2f3: ex.ratio, // speaker-normalised frontness; adaptTarget uses it at scoring time
   };
 }

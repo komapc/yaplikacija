@@ -11,7 +11,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "calibrate": "tsx scripts/calibrate-exercises.ts",
-    "praat:compare": "tsx scripts/praat-compare.ts"
+    "praat:compare": "tsx scripts/praat-compare.ts",
+    "validate:f3": "tsx scripts/validate-f3.ts"
   },
   "devDependencies": {
     "audio-decode": "^3.10.2",
