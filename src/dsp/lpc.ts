@@ -44,6 +44,24 @@ export function autocorrelate(x: Float64Array, order: number): Float64Array {
 }
 
 /**
+ * Gaussian lag window (bandwidth-broadening) applied to the autocorrelation.
+ * Multiplying R[k] by exp(-½(2π·B·k/fs)²) widens every formant bandwidth by
+ * ~B Hz, which damps spurious razor-sharp poles and the F1/F2 pole-merging that
+ * plain autocorrelation LPC suffers on high-pitched (female) and back vowels.
+ * It is the robustness we wanted from closed-phase analysis, without fragile
+ * glottal-closure-instant detection. See Tohkura et al., 1978.
+ */
+export function lagWindow(r: Float64Array, sampleRate: number, bandwidthHz = 50): Float64Array {
+  const out = new Float64Array(r.length);
+  const c = (2 * Math.PI * bandwidthHz) / sampleRate;
+  for (let k = 0; k < r.length; k++) {
+    const w = Math.exp(-0.5 * (c * k) * (c * k));
+    out[k] = r[k] * w;
+  }
+  return out;
+}
+
+/**
  * Levinson-Durbin recursion. Returns LPC coefficients as the polynomial
  * A(z) = 1 + a[1]z^-1 + ... + a[order]z^-order (a[0] === 1), or null if the
  * frame carries no energy.
@@ -137,7 +155,9 @@ export function estimateFormants(
 ): Formant[] {
   const emphasised = preEmphasis(frame);
   const windowed = hammingWindow(emphasised);
-  const r = autocorrelate(windowed, order);
+  // Lag-window the autocorrelation before the recursion to stabilise the poles
+  // (broadens bandwidths slightly; suppresses spurious/merged formants).
+  const r = lagWindow(autocorrelate(windowed, order), sampleRate);
   const a = levinsonDurbin(r, order);
   if (!a) return [];
 

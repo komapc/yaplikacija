@@ -3,6 +3,7 @@ import {
   preEmphasis,
   hammingWindow,
   autocorrelate,
+  lagWindow,
   levinsonDurbin,
   polynomialRoots,
   estimateFormants,
@@ -71,6 +72,25 @@ describe("polynomialRoots", () => {
       expect(Math.abs(r.re)).toBeCloseTo(0, 3);
       expect(Math.abs(r.im)).toBeCloseTo(1, 3);
     }
+  });
+});
+
+describe("lagWindow", () => {
+  it("leaves R[0] unchanged and monotonically attenuates higher lags", () => {
+    const r = new Float64Array([10, 10, 10, 10, 10]);
+    const w = lagWindow(r, 16000, 50);
+    expect(w[0]).toBeCloseTo(10, 9); // exp(0) = 1
+    for (let k = 1; k < w.length; k++) {
+      expect(w[k]).toBeLessThan(w[k - 1]); // weight strictly decreasing
+      expect(w[k]).toBeGreaterThan(0);
+    }
+  });
+
+  it("attenuates more aggressively with a wider broadening bandwidth", () => {
+    const r = new Float64Array([1, 1, 1, 1]);
+    const mild = lagWindow(r, 16000, 30);
+    const strong = lagWindow(r, 16000, 120);
+    expect(strong[3]).toBeLessThan(mild[3]);
   });
 });
 

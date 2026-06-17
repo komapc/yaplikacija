@@ -157,4 +157,27 @@ describe("findVowelNucleus run-finder", () => {
     expect(m.found).toBe(true);
     expect(Math.abs(m.f2 - 1500)).toBeLessThan(40);
   });
+
+  it("locks onto the STEADY held vowel, not the onset transition that sweeps past it", () => {
+    // One loud run whose first half is an [i]→ glide (F2 2200→1700) and second
+    // half is a steady Ы at 1500. The steadiest-window search must land on the
+    // held 1500, not average in the transition (the coronal-onset fronting bug).
+    const frames = [];
+    const sweep = [2200, 2100, 2000, 1900, 1800, 1700];
+    for (let i = 0; i < 6; i++) frames.push(F(i * 0.01, 0.3, 320, sweep[i]));
+    for (let i = 0; i < 6; i++) frames.push(F(0.06 + i * 0.01, 0.3, 350, 1500));
+    const m = findVowelNucleus(frames, 0.03);
+    expect(m.found).toBe(true);
+    expect(Math.abs(m.f2 - 1500)).toBeLessThan(40); // the held target, not ~1950
+    expect(m.spread).toBeLessThan(40); // steady window ⇒ low F2 spread (confidence)
+  });
+
+  it("reports a higher spread for a jittery window than a steady one", () => {
+    const steady = [];
+    for (let i = 0; i < 8; i++) steady.push(F(i * 0.01, 0.3, 350, 1500));
+    const jittery = [];
+    const js = [1500, 1700, 1350, 1650, 1400, 1750, 1300, 1600];
+    for (let i = 0; i < 8; i++) jittery.push(F(i * 0.01, 0.3, 350, js[i]));
+    expect(findVowelNucleus(jittery, 0.03).spread).toBeGreaterThan(findVowelNucleus(steady, 0.03).spread);
+  });
 });

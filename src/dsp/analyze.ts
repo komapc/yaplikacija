@@ -55,6 +55,11 @@ export function analyzeBuffer(input: Float32Array, sampleRate: number): Analysis
     frames.push({ timeSec: start / sampleRate, f0: v.f0, f1, f2, f3, rms: v.rms });
   }
 
+  // Continuity smoothing: a 3-point median filter on each formant trajectory
+  // removes single-frame LPC outliers (the bimodal F2 jumps seen on back vowels,
+  // e.g. [u] reading 570 one frame and 2200 the next) before any aggregation.
+  smoothFrames(frames);
+
   // Median over the STEADY middle of the hold (drop the onset/offset glides),
   // which is what sound mode scores. Edges can pull a whole-buffer median far
   // off the held vowel — a source of inconsistent scores.
@@ -66,6 +71,29 @@ export function analyzeBuffer(input: Float32Array, sampleRate: number): Analysis
     voicedRatio: total === 0 ? 0 : voicedCount / total,
     frames,
   };
+}
+
+/** Median of three, ignoring zeros so a missing F3 neighbour can't blank a real
+ * value. With one zero it returns the non-zero middle; with two it returns 0. */
+function med3(a: number, b: number, c: number): number {
+  const v = [a, b, c].filter((x) => x > 0).sort((x, y) => x - y);
+  if (v.length === 3) return v[1];
+  if (v.length === 2) return (v[0] + v[1]) / 2;
+  return v[0] ?? 0;
+}
+
+/** In-place 3-point median filter on the f1/f2/f3 trajectories (continuity
+ * tracking). Reads from a snapshot so the smoothing is not cascaded. */
+function smoothFrames(frames: FrameResult[]): void {
+  if (frames.length < 3) return;
+  const f1 = frames.map((f) => f.f1);
+  const f2 = frames.map((f) => f.f2);
+  const f3 = frames.map((f) => f.f3);
+  for (let i = 1; i < frames.length - 1; i++) {
+    frames[i].f1 = med3(f1[i - 1], f1[i], f1[i + 1]);
+    frames[i].f2 = med3(f2[i - 1], f2[i], f2[i + 1]);
+    frames[i].f3 = med3(f3[i - 1], f3[i], f3[i + 1]);
+  }
 }
 
 /** Drop the first/last 15% of frames (onset/offset transitions) when there are
@@ -102,6 +130,10 @@ export interface WindowMatch {
   frames: FrameResult[];
   startSec: number;
   endSec: number;
+  /** F2 standard deviation over the window (Hz) — a measurement-confidence
+   * signal: a steady held vowel has low spread, a transition-contaminated or
+   * mis-tracked window is high. Calibration gates on this. */
+  spread: number;
   found: boolean;
 }
 
@@ -114,6 +146,7 @@ function windowResult(frames: FrameResult[], s: number, e: number): WindowMatch 
     frames: win,
     startSec: win[0].timeSec,
     endSec: win[win.length - 1].timeSec,
+    spread: stdev(win.map((f) => f.f2)),
     found: true,
   };
 }
@@ -128,7 +161,7 @@ function windowResult(frames: FrameResult[], s: number, e: number): WindowMatch 
  * it; scoring then judges it fairly.
  */
 export function findVowelNucleus(frames: FrameResult[], minDurationSec = 0.05): WindowMatch {
-  const empty: WindowMatch = { f1: 0, f2: 0, f3: 0, frames: [], startSec: 0, endSec: 0, found: false };
+  const empty: WindowMatch = { f1: 0, f2: 0, f3: 0, frames: [], startSec: 0, endSec: 0, spread: 0, found: false };
   const minFrames = Math.max(3, Math.round(minDurationSec / FRAME_HOP_SEC));
   if (frames.length < minFrames) return empty;
 
@@ -166,10 +199,25 @@ export function findVowelNucleus(frames: FrameResult[], minDurationSec = 0.05): 
     }
   }
 
-  // Trim ~20% off each end (the consonant→vowel transitions), keeping >= minFrames.
-  const len = best.hi - best.lo + 1;
-  const trim = Math.max(0, Math.min(Math.floor(len * 0.2), Math.floor((len - minFrames) / 2)));
-  return windowResult(frames, best.lo + trim, best.hi - trim);
+  // Within the chosen run, slide a fixed-length window and keep the position
+  // with the LOWEST F2 variation — the spectrally steadiest stretch, i.e. the
+  // vowel's held target rather than a consonant→vowel transition (which is what
+  // fronts the vowel toward [i] after coronal/palatal onsets). This replaces a
+  // blind 20% edge trim, which kept whatever the edges happened to be.
+  const runLen = best.hi - best.lo + 1;
+  const win = Math.max(minFrames, Math.round(runLen * 0.5));
+  let bestStart = best.lo;
+  let bestSpread = Infinity;
+  for (let s = best.lo; s + win - 1 <= best.hi; s++) {
+    const f2s: number[] = [];
+    for (let k = s; k < s + win; k++) f2s.push(frames[k].f2);
+    const sp = stdev(f2s);
+    if (sp < bestSpread) {
+      bestSpread = sp;
+      bestStart = s;
+    }
+  }
+  return windowResult(frames, bestStart, bestStart + win - 1);
 }
 
 /**
