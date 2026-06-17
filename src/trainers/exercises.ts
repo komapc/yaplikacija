@@ -89,6 +89,6 @@ export function exerciseTarget(ex: WordExercise): SoundTarget {
     ...base,
     f1: { ...base.f1, center: ex.target.f1 },
     f2: { ...base.f2, center: ex.target.f2 },
-    f2f3: ex.ratio, // speaker-normalised frontness; adaptTarget uses it at scoring time
+    // f2f3 ratio intentionally not set — absolute F2 scoring (see targets.ts note).
   };
 }

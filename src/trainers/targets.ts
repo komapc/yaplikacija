@@ -57,8 +57,10 @@ export const TARGETS: Record<SoundTarget["id"], SoundTarget> = {
     f2: { center: 1500, tolerance: 200 },
     // F2 (tongue front/back) is the decisive cue: confusing «и»/«у» is an F2 error.
     weights: { f1: 0.4, f2: 0.6 },
-    // Ы sits ~central between [i] and [u]; F2/F3 ≈ 0.6 across vocal-tract sizes.
-    f2f3: 0.6,
+    // NOTE: F2/F3-ratio scoring (speaker normalisation) was tried and reverted —
+    // F3 is too noisy on short CVC words (±200-450 Hz vs Praat), and dividing by
+    // it let wrong vowels pass (и scored 73 as ы). Absolute F2 rejects them (~45).
+    // Re-enable by setting `f2f3` once F3 estimation is robust enough.
     mistakes: {
       f2TooHigh: "That sounded like «и» — your tongue is too far forward. Pull it back toward the throat.",
       f2TooLow: "That drifted toward «у» — relax the back of the tongue and spread the lips a little.",

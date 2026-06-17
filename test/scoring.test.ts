@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { TARGETS, scoreAttempt } from "../src/trainers/targets";
+import { TARGETS, scoreAttempt, adaptTarget } from "../src/trainers/targets";
 import type { AnalysisResult, FrameResult } from "../src/dsp/analyze";
 
 /** Build a valid (sufficiently voiced) result centred on the given formants.
@@ -76,15 +76,13 @@ describe("scoreAttempt", () => {
     expect(s.feedback.startsWith(t.mistakes.f1TooLow)).toBe(true);
   });
 
-  it("places the Ы F2 target at f2f3×F3 (speaker-normalised, no calibration)", () => {
-    const t = TARGETS.yery; // f2f3 = 0.6
-    // Larger tract (low formants): F3 2200 → target F2 ≈ 1320.
-    expect(scoreAttempt(t, result(350, 1320, 1, 2200)).f2Score).toBeGreaterThanOrEqual(80);
-    // Smaller tract (high formants): F3 3000 → target F2 ≈ 1800.
-    const small = scoreAttempt(t, result(350, 1800, 1, 3000)).f2Score;
-    expect(small).toBeGreaterThanOrEqual(80);
-    // The fixed 1500 Hz Ы would mis-score the small-tract speaker; the ratio does not.
-    expect(scoreAttempt(t, result(350, 1500, 1, 3000)).f2Score).toBeLessThan(small);
+  it("scores absolute F2 (adaptTarget is a no-op without f2f3) — rejects [i]", () => {
+    const t = TARGETS.yery;
+    // No f2f3 set, so the target is unchanged regardless of the attempt's F3.
+    expect(adaptTarget(t, { f3: 2800 }).f2.center).toBe(t.f2.center);
+    // Central F2 near the target scores well; a front [i]-like F2 does not.
+    expect(scoreAttempt(t, result(350, t.f2.center, 1, 2800)).f2Score).toBeGreaterThanOrEqual(80);
+    expect(scoreAttempt(t, result(350, 2040, 1, 2800)).f2Score).toBeLessThan(50);
   });
 
   it("keeps scores within 0..100", () => {

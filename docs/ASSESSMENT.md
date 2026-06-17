@@ -9,10 +9,10 @@ exists and [ROADMAP.md](ROADMAP.md) for plans.
   keys, no per-use cost; works offline once loaded; free static hosting.
 - **Validated DSP** — the formant tracker agrees with Praat to ~15 Hz on F1,
   ~105 Hz on F2, ~86 Hz on F3 (see `praat:compare`, `validate:f3`).
-- **Speaker-independent Ы, no calibration** — the Ы F2 target is a ratio of the
-  speaker's own F3 (`f2f3 ≈ 0.6`), which cancels vocal-tract length so men, women
-  and children are graded fairly. ~2.4× more stable than absolute F2 under a
-  simulated tract shift. Addresses the biggest accuracy/fairness gap.
+- **Validated on a native speaker** — a controlled minimal set (сон/сун/син/
+  сан/сюн/сён) confirmed scoring rejects non-ы vowels with absolute F2 (~38–48),
+  and exposed that the F2/F3-ratio speaker-normalisation made it *worse* (wrong
+  vowels 55–73) because F3 is too noisy on short words — so it was reverted.
 - **Self-consistent scoring** — per-word targets are measured by the *same*
   tracker that grades the learner, so systematic estimator bias (e.g. the F2
   offset vs Praat) is common-mode and cancels.
