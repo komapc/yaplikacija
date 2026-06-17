@@ -81,13 +81,20 @@ function open(id: string): void {
 }
 
 for (const t of TABS) {
-  const b = document.createElement("button");
-  b.className = "tab";
-  b.dataset.id = t.id;
-  b.textContent = t.label;
-  b.addEventListener("click", () => open(t.id));
-  tabsEl.appendChild(b);
+  const a = document.createElement("a");
+  a.className = "tab";
+  a.dataset.id = t.id;
+  a.href = "#" + t.id; // each tab is a real link (#sound, #bullseye, …)
+  a.textContent = t.label;
+  tabsEl.appendChild(a);
 }
+
+// Route from the URL hash so tabs are linkable / bookmarkable and Back works.
+function route(): void {
+  const id = location.hash.replace(/^#/, "");
+  open(TABS.some((t) => t.id === id) ? id : TABS[0].id);
+}
+window.addEventListener("hashchange", route);
 
 // About modal
 const aboutModal = document.getElementById("about")!;
@@ -101,4 +108,4 @@ window.addEventListener("keydown", (e) => {
   if (e.key === "Escape") setAbout(false);
 });
 
-open("sound");
+route(); // open the tab named in the URL hash (or the first tab)

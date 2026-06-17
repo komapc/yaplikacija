@@ -43,6 +43,8 @@ html, body {
   font-size: 15px;
   cursor: pointer;
   transition: all 0.15s;
+  text-decoration: none;
+  display: inline-block;
 }
 .tab.active { color: var(--text); border-color: var(--accent); background: #1f2533; }
 

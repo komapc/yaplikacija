@@ -2,6 +2,10 @@
 import { describe, it, expect, beforeAll } from "vitest";
 
 const click = (sel: string) => (document.querySelector(sel) as HTMLElement).click();
+const go = (id: string) => {
+  location.hash = "#" + id;
+  window.dispatchEvent(new Event("hashchange"));
+};
 
 describe("app boot (jsdom)", () => {
   beforeAll(async () => {
@@ -12,24 +16,26 @@ describe("app boot (jsdom)", () => {
     await import("../src/main"); // runs the tab shell + mounts the default tab
   });
 
-  it("renders five tabs", () => {
-    expect(document.querySelectorAll(".tab")).toHaveLength(5);
+  it("renders five tabs as hash links", () => {
+    const tabs = document.querySelectorAll<HTMLAnchorElement>("a.tab");
+    expect(tabs).toHaveLength(5);
+    expect(tabs[0].getAttribute("href")).toBe("#sound");
   });
 
   it("defaults to the Ы sound trainer", () => {
     expect(document.querySelector("#view .glyph")?.textContent).toBe("Ы");
   });
 
-  it("mounts each game tab without crashing", () => {
-    click('[data-id="bullseye"]');
+  it("routes each game tab via the URL hash without crashing", () => {
+    go("bullseye");
     expect(document.querySelector("#view")!.textContent).toContain("Мишень");
-    click('[data-id="duel"]');
+    go("duel");
     expect(document.querySelector("#view")!.textContent).toContain("Дуэль");
-    click('[data-id="falling"]');
+    go("falling");
     expect(document.querySelector("#view .fall-field")).not.toBeNull();
-    click('[data-id="word"]');
+    go("word");
     expect((document.querySelector("#view .word-text")?.textContent ?? "").length).toBeGreaterThan(0);
-    click('[data-id="sound"]'); // back to a non-animating tab (tears down falling's loop)
+    go("sound"); // back to a non-animating tab (tears down falling's loop)
     expect(document.querySelector("#view .glyph")?.textContent).toBe("Ы");
   });
 
