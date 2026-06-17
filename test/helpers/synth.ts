@@ -26,7 +26,7 @@ export function synthVowel(
   const period = Math.round(fs / f0);
   for (let i = 0; i < n; i += period) src[i] = 1;
 
-  let sig = src;
+  let sig: Float64Array = src;
   for (const fm of formants) sig = resonate(sig, fm.f, fm.bw, fs);
 
   let max = 0;

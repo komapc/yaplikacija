@@ -1,8 +1,9 @@
-name: Deploy to GitHub Pages
+name: CI / Deploy to GitHub Pages
 
 on:
   push:
     branches: [main]
+  pull_request: # validate (typecheck + test + build) but do NOT deploy
   workflow_dispatch:
 
 permissions:
@@ -14,9 +15,10 @@ permissions:
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
-# Allow one concurrent deployment, cancelling older in-progress runs.
+# Serialize per ref: a new push/PR update cancels its own older run, but a PR
+# never cancels the main-branch deploy (different group).
 concurrency:
-  group: pages
+  group: pages-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -29,6 +31,7 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
+      - run: npm run typecheck # type-checks src AND test/ (build only covers src)
       - run: npm test
 
   build:
@@ -48,6 +51,8 @@ jobs:
 
   deploy:
     needs: build
+    # Only the main branch publishes; PRs run test+build for validation only.
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     environment:
       name: github-pages

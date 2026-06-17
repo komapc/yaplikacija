@@ -32,7 +32,7 @@ describe("scoreAttempt", () => {
   });
 
   it("returns 0 when there are too few voiced frames", () => {
-    const r: AnalysisResult = { f1: 350, f2: 1500, voicedRatio: 1, frames: [] };
+    const r: AnalysisResult = { f1: 350, f2: 1500, f3: 0, voicedRatio: 1, frames: [] };
     expect(scoreAttempt(TARGETS.yery, r).overall).toBe(0);
   });
 
