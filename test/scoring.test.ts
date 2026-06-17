@@ -14,7 +14,7 @@ function result(f1: number, f2: number, voicedRatio = 1, f3 = 0): AnalysisResult
     f3,
     rms: 0.1,
   }));
-  return { f1, f2, f3, voicedRatio, frames };
+  return { f1, f2, f3, voicedRatio, spread: 0, frames };
 }
 
 describe("scoreAttempt", () => {
@@ -32,7 +32,7 @@ describe("scoreAttempt", () => {
   });
 
   it("returns 0 when there are too few voiced frames", () => {
-    const r: AnalysisResult = { f1: 350, f2: 1500, f3: 0, voicedRatio: 1, frames: [] };
+    const r: AnalysisResult = { f1: 350, f2: 1500, f3: 0, voicedRatio: 1, spread: 0, frames: [] };
     expect(scoreAttempt(TARGETS.yery, r).overall).toBe(0);
   });
 

@@ -99,34 +99,52 @@ export function drawFormantChart(
     ctx.fillText(a.label, ax + 5, ay + 4);
   }
 
-  // Target zone: axis-aligned ellipse at the true per-formant tolerances.
+  // Target as a DARTBOARD: concentric iso-score rings (the score decays smoothly
+  // with weighted distance, so these are the contours where it equals 50/70/85).
   const cx = x(target.f2.center);
   const cy = y(target.f1.center);
-  const rx = (target.f2.tolerance / (f2Max - f2Min)) * plotW;
-  const ry = (target.f1.tolerance / (f1Max - f1Min)) * plotH;
-  ctx.beginPath();
-  ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
-  ctx.fillStyle = "rgba(72, 199, 142, 0.18)";
-  ctx.strokeStyle = "rgba(72, 199, 142, 0.7)";
-  ctx.lineWidth = 2;
-  ctx.fill();
-  ctx.stroke();
-  ctx.fillStyle = "rgba(72, 199, 142, 0.9)";
+  const { f1: w1, f2: w2 } = target.weights;
+  const wsum = w1 + w2;
+  // For score S the weighted distance D = 3·(1 − S/100); the contour is an ellipse
+  // with per-axis semi-extent tol·D·√(wsum/w) (in Hz), mapped to pixels.
+  const ringPx = (score: number) => {
+    const d = 3 * (1 - score / 100);
+    const rxHz = target.f2.tolerance * d * Math.sqrt(wsum / w2);
+    const ryHz = target.f1.tolerance * d * Math.sqrt(wsum / w1);
+    return {
+      rx: Math.max(0, (rxHz / (f2Max - f2Min)) * plotW),
+      ry: Math.max(0, (ryHz / (f1Max - f1Min)) * plotH),
+    };
+  };
+  for (const { score, fill } of [
+    { score: 50, fill: 0.08 },
+    { score: 70, fill: 0.12 },
+    { score: 85, fill: 0.2 },
+  ]) {
+    const { rx, ry } = ringPx(score);
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(72, 199, 142, ${fill})`;
+    ctx.strokeStyle = "rgba(72, 199, 142, 0.55)";
+    ctx.lineWidth = 1.5;
+    ctx.fill();
+    ctx.stroke();
+  }
+  ctx.fillStyle = "rgba(72, 199, 142, 0.95)";
   ctx.font = "bold 13px system-ui, sans-serif";
-  ctx.fillText(`${target.letter} target`, cx - 22, cy + 4);
+  ctx.fillText(target.letter, cx - 5, cy + 5);
 
   if (!result || result.frames.length === 0) return;
 
-  // Faint trail of the steady portion (thinned).
-  ctx.fillStyle = "rgba(255, 209, 102, 0.35)";
-  for (const f of steadyThinnedFrames(result.frames)) {
-    if (!inView(f.f1, f.f2)) continue;
-    ctx.beginPath();
-    ctx.arc(x(f.f2), y(f.f1), 2, 0, Math.PI * 2);
-    ctx.fill();
-  }
-
+  // The attempt as an AREA: the covariance ellipse of the steady cloud (size =
+  // how steadily it was held, orientation = which formant wandered), plus the
+  // weighted-center "you" dot.
   if (inView(result.f1, result.f2)) {
+    const pts: { px: number; py: number }[] = [];
+    for (const f of steadyThinnedFrames(result.frames)) {
+      if (inView(f.f1, f.f2)) pts.push({ px: x(f.f2), py: y(f.f1) });
+    }
+    drawAttemptEllipse(ctx, pts);
     drawYouDot(ctx, x(result.f2), y(result.f1));
   } else {
     // Off-chart: clamp to the edge and point an arrow toward the true location.
@@ -137,6 +155,55 @@ export function drawFormantChart(
     const angle = Math.atan2(ty - ey, tx - ex);
     drawArrow(ctx, ex, ey, angle);
   }
+}
+
+/**
+ * Draw the ~2σ covariance ellipse of the attempt cloud, computed in PIXEL space
+ * (so the chart's different F1/F2 scales are handled correctly). A steady held
+ * vowel gives a small tight ellipse; a glide or unstable attempt gives a large
+ * elongated one whose long axis shows which formant moved.
+ */
+function drawAttemptEllipse(ctx: CanvasRenderingContext2D, pts: { px: number; py: number }[]): void {
+  if (pts.length < 4) return; // too few points for a meaningful spread
+  let mx = 0;
+  let my = 0;
+  for (const p of pts) {
+    mx += p.px;
+    my += p.py;
+  }
+  mx /= pts.length;
+  my /= pts.length;
+  let sxx = 0;
+  let syy = 0;
+  let sxy = 0;
+  for (const p of pts) {
+    const dx = p.px - mx;
+    const dy = p.py - my;
+    sxx += dx * dx;
+    syy += dy * dy;
+    sxy += dx * dy;
+  }
+  const n = pts.length;
+  sxx /= n;
+  syy /= n;
+  sxy /= n;
+  // Eigenvalues/eigenvector of the symmetric 2×2 covariance.
+  const tr = sxx + syy;
+  const det = sxx * syy - sxy * sxy;
+  const disc = Math.sqrt(Math.max(0, (tr * tr) / 4 - det));
+  const l1 = tr / 2 + disc;
+  const l2 = tr / 2 - disc;
+  const angle = Math.abs(sxy) < 1e-9 ? (sxx >= syy ? 0 : Math.PI / 2) : Math.atan2(l1 - sxx, sxy);
+  const k = 2; // ~2σ
+  const a = Math.max(3, k * Math.sqrt(Math.max(0, l1)));
+  const b = Math.max(3, k * Math.sqrt(Math.max(0, l2)));
+  ctx.beginPath();
+  ctx.ellipse(mx, my, a, b, angle, 0, Math.PI * 2);
+  ctx.fillStyle = "rgba(255, 107, 107, 0.18)";
+  ctx.strokeStyle = "rgba(255, 107, 107, 0.7)";
+  ctx.lineWidth = 1.5;
+  ctx.fill();
+  ctx.stroke();
 }
 
 function drawYouDot(ctx: CanvasRenderingContext2D, ux: number, uy: number): void {

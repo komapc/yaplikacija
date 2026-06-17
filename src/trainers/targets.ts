@@ -137,8 +137,18 @@ export function scoreAttempt(target: SoundTarget, result: AnalysisResult): Score
   const dist = Math.sqrt((w1 * d1 * d1 + w2 * d2 * d2) / (w1 + w2));
   const overall = Math.max(0, Math.round(100 * (1 - dist / 3)));
 
-  return { overall, f1Score, f2Score, feedback: buildFeedback(t, result, overall) };
+  let feedback = buildFeedback(t, result, overall);
+  // If the vowel was not held steadily (F2 wandered more than a tolerance width),
+  // the reading is shaky regardless of where it landed — say so first.
+  if (overall < 85 && result.spread > STEADY_SPREAD) {
+    feedback = `Hold the vowel steadier — it wandered a lot. ${feedback}`;
+  }
+  return { overall, f1Score, f2Score, feedback };
 }
+
+/** F2 spread (Hz) above which an attempt counts as "not held steady". Roughly a
+ * full F2 tolerance width — by then the sound moved more than the target zone. */
+const STEADY_SPREAD = 250;
 
 function dimensionScore(value: number, t: FormantTarget): number {
   const dist = Math.abs(value - t.center);

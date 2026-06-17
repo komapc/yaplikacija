@@ -12,16 +12,21 @@ export interface FrameResult {
   f2: number;
   f3: number; // 0 when no plausible third formant was found
   rms: number;
+  b1?: number; // F1 bandwidth (Hz) — narrow poles are more reliable
+  b2?: number; // F2 bandwidth (Hz)
 }
 
 export interface AnalysisResult {
-  /** Median formants over the voiced steady portion. */
+  /** Confidence-weighted center over the voiced steady portion. */
   f1: number;
   f2: number;
   f3: number; // 0 when unavailable
   /** Fraction of frames that yielded a usable voiced formant pair — a proxy for
    * "did they sustain it". */
   voicedRatio: number;
+  /** F2 standard deviation over the steady portion (Hz) — how steadily the vowel
+   * was held; high means the sound wandered (a glide or an unstable attempt). */
+  spread: number;
   frames: FrameResult[];
 }
 
@@ -52,7 +57,16 @@ export function analyzeBuffer(input: Float32Array, sampleRate: number): Analysis
     const f3 = f3cand > f2 && f3cand < 4500 ? f3cand : 0;
 
     voicedCount++;
-    frames.push({ timeSec: start / sampleRate, f0: v.f0, f1, f2, f3, rms: v.rms });
+    frames.push({
+      timeSec: start / sampleRate,
+      f0: v.f0,
+      f1,
+      f2,
+      f3,
+      rms: v.rms,
+      b1: formants[0].bandwidth,
+      b2: formants[1].bandwidth,
+    });
   }
 
   // Continuity smoothing: a 3-point median filter on each formant trajectory
@@ -65,12 +79,43 @@ export function analyzeBuffer(input: Float32Array, sampleRate: number): Analysis
   // off the held vowel — a source of inconsistent scores.
   const steady = steadyMiddle(frames);
   return {
-    f1: median(steady.map((f) => f.f1)),
-    f2: median(steady.map((f) => f.f2)),
+    // Confidence-weighted center: each frame counts by its loudness and the
+    // narrowness of its LPC pole (a wide bandwidth signals an unreliable / merged
+    // formant), so jittery low-confidence frames pull the estimate less.
+    f1: confidentCenter(steady, (f) => f.f1, (f) => f.b1),
+    f2: confidentCenter(steady, (f) => f.f2, (f) => f.b2),
     f3: median(steady.map((f) => f.f3)),
     voicedRatio: total === 0 ? 0 : voicedCount / total,
+    spread: stdev(steady.map((f) => f.f2)),
     frames,
   };
+}
+
+/** Per-frame reliability weight: louder and narrower-band ⇒ more trustworthy. */
+function frameWeight(rms: number, bandwidth: number | undefined): number {
+  return rms / (1 + (bandwidth ?? 120) / 120);
+}
+
+/** Weighted median of the frames' value, weighting by frameWeight. Median (not
+ * mean) keeps it robust to the occasional wild outlier; the weights demote
+ * low-confidence frames. */
+function confidentCenter(
+  frames: FrameResult[],
+  value: (f: FrameResult) => number,
+  bandwidth: (f: FrameResult) => number | undefined,
+): number {
+  const items = frames
+    .map((f) => ({ v: value(f), w: frameWeight(f.rms, bandwidth(f)) }))
+    .filter((x) => Number.isFinite(x.v) && x.v > 0 && x.w > 0)
+    .sort((a, b) => a.v - b.v);
+  if (items.length === 0) return 0;
+  const total = items.reduce((s, x) => s + x.w, 0);
+  let acc = 0;
+  for (const x of items) {
+    acc += x.w;
+    if (acc >= total / 2) return x.v;
+  }
+  return items[items.length - 1].v;
 }
 
 /** Median of three, ignoring zeros so a missing F3 neighbour can't blank a real
@@ -237,6 +282,7 @@ export function analyzeWord(
     f2: match.f2,
     f3: match.f3,
     voicedRatio: match.found ? 1 : 0,
+    spread: match.spread,
     frames: match.found ? match.frames : [],
   };
   return { result, match };
