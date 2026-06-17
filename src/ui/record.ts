@@ -19,30 +19,54 @@ export function holdToRecord(
     onError?: (e: unknown) => void;
   },
 ): () => void {
-  let recording = false;
+  // "starting" = waiting for the mic to open. A release during this window must
+  // be remembered (releasedEarly) so we don't leave the recorder — and the mic —
+  // stuck on after start() finally resolves.
+  let state: "idle" | "starting" | "recording" = "idle";
+  let releasedEarly = false;
 
-  const down = (e: PointerEvent) => {
-    e.preventDefault();
-    if (recording) return;
-    button.setPointerCapture(e.pointerId);
-    void recorder
-      .start()
-      .then(() => {
-        recording = true;
-        button.classList.add("active");
-        handlers.onStart?.();
-      })
-      .catch((err) => handlers.onError?.(err));
-  };
-
-  const up = () => {
-    if (!recording) return;
-    recording = false;
+  const finish = () => {
+    if (state !== "recording") return;
+    state = "idle";
     button.classList.remove("active");
     void recorder
       .stop()
       .then(handlers.onResult)
       .catch((err) => handlers.onError?.(err));
+  };
+
+  const down = (e: PointerEvent) => {
+    e.preventDefault();
+    if (state !== "idle") return;
+    state = "starting";
+    releasedEarly = false;
+    button.setPointerCapture(e.pointerId);
+    void recorder
+      .start()
+      .then(() => {
+        if (releasedEarly) {
+          // Tapped and let go before the mic opened: release it, no result.
+          state = "idle";
+          void recorder.stop().catch(() => {});
+          return;
+        }
+        state = "recording";
+        button.classList.add("active");
+        handlers.onStart?.();
+      })
+      .catch((err) => {
+        state = "idle";
+        button.classList.remove("active");
+        handlers.onError?.(err);
+      });
+  };
+
+  const up = () => {
+    if (state === "starting") {
+      releasedEarly = true; // defer the stop until start() resolves
+      return;
+    }
+    finish();
   };
 
   button.addEventListener("pointerdown", down);
