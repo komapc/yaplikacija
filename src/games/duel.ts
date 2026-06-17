@@ -41,21 +41,27 @@ export function createDuel(recorder: Recorder): View {
       }
       const result = analyzeBuffer(samples, sampleRate);
       const v = classifyVowel(result.f1, result.f2);
-      round += 1;
       if (v === "ы") {
+        round += 1;
         const pts = scoreAttempt(t, result).overall;
         score += pts;
         q("d-fb").textContent = `✓ clean ы — +${pts}`;
         q("d-fb").className = "status hit";
-      } else {
+      } else if (v === "и" || v === "у") {
+        // Only the named rivals cost a life.
+        round += 1;
         lives -= 1;
-        q("d-fb").textContent = v ? `✗ that was «${v}»! −1 ♥` : "✗ couldn't hear a vowel";
+        q("d-fb").textContent = `✗ that was «${v}»! −1 ♥`;
         q("d-fb").className = "status miss";
         q("d-lives").textContent = "♥".repeat(Math.max(0, lives)) + "·".repeat(LIVES - Math.max(0, lives));
         if (lives <= 0) {
           over = true;
           q("d-fb").textContent = `💀 out of lives — score ${score}. Hold to play again.`;
         }
+      } else {
+        // Not ы, but not a rival either — no penalty, just try again.
+        q("d-fb").textContent = v ? `«${v}» — aim for a clear «ы»` : "couldn't hear a vowel — try again";
+        q("d-fb").className = "status";
       }
       q("d-score").textContent = String(score);
       q("d-round").textContent = String(round);

@@ -7,7 +7,8 @@ import { drawFormantChart } from "../ui/formantChart";
 import { holdToRecord } from "../ui/record";
 import type { View } from "../views/types";
 
-const HIT = 70; // score needed to count as a hit
+const HIT = 65; // score needed to count as a hit (good Ы ≈ 76+, wrong vowels ≤ 55)
+const MAX_MULT = 8;
 
 export function createBullseye(recorder: Recorder): View {
   const t = TARGETS.yery;
@@ -34,7 +35,7 @@ export function createBullseye(recorder: Recorder): View {
       if (s >= HIT) {
         combo += 1;
         best = Math.max(best, combo);
-        const mult = Math.min(combo, 5);
+        const mult = Math.min(combo, MAX_MULT);
         const pts = s * mult;
         score += pts;
         q("b-fb").textContent = `✦ HIT ${s} ×${mult} = +${pts}`;

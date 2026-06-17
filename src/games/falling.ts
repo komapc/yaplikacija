@@ -7,8 +7,9 @@ import { classifyVowel, FALLING_WORDS, type FallingWord } from "../trainers/vowe
 import { holdToRecord } from "../ui/record";
 import type { View } from "../views/types";
 
-const START_MS = 6500;
-const MIN_MS = 3000;
+const START_MS = 7000; // time for the first word to fall
+const MIN_MS = 3500; // fastest it gets
+const SPEEDUP_MS = 200; // faster per cleared word
 const CHIP_H = 52;
 
 export function createFalling(recorder: Recorder): View {
@@ -96,7 +97,7 @@ export function createFalling(recorder: Recorder): View {
         q("f-fb").className = "status hit";
         cur.chip.remove();
         cur = null;
-        fallMs = Math.max(MIN_MS, fallMs - 300);
+        fallMs = Math.max(MIN_MS, fallMs - SPEEDUP_MS);
         spawn();
       } else {
         q("f-fb").textContent = `heard «${v ?? "?"}» — that word needs «${cur.word.vowel}»`;
