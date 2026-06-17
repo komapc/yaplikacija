@@ -32,9 +32,6 @@ export function analyzeBuffer(input: Float32Array, sampleRate: number): Analysis
   const frameSize = Math.round(0.025 * sampleRate); // 25 ms
   const hop = Math.round(0.010 * sampleRate); // 10 ms
   const frames: FrameResult[] = [];
-  const f1s: number[] = [];
-  const f2s: number[] = [];
-  const f3s: number[] = [];
   let voicedCount = 0;
   let total = 0;
 
@@ -51,24 +48,32 @@ export function analyzeBuffer(input: Float32Array, sampleRate: number): Analysis
     // Reject implausible formant pairs (noise / unstable LPC on consonantal or
     // nasal frames): F1 too low, F2 above the human range, or F2 not above F1.
     if (f1 < 150 || f2 > 3500 || f2 <= f1) continue;
-    // F3 (used for speaker-normalised F2/F3 scoring); 0 when not plausibly found.
     const f3cand = formants.length >= 3 ? formants[2].freq : 0;
     const f3 = f3cand > f2 && f3cand < 4500 ? f3cand : 0;
 
     voicedCount++;
     frames.push({ timeSec: start / sampleRate, f0: v.f0, f1, f2, f3, rms: v.rms });
-    f1s.push(f1);
-    f2s.push(f2);
-    if (f3 > 0) f3s.push(f3);
   }
 
+  // Median over the STEADY middle of the hold (drop the onset/offset glides),
+  // which is what sound mode scores. Edges can pull a whole-buffer median far
+  // off the held vowel — a source of inconsistent scores.
+  const steady = steadyMiddle(frames);
   return {
-    f1: median(f1s),
-    f2: median(f2s),
-    f3: median(f3s),
+    f1: median(steady.map((f) => f.f1)),
+    f2: median(steady.map((f) => f.f2)),
+    f3: median(steady.map((f) => f.f3)),
     voicedRatio: total === 0 ? 0 : voicedCount / total,
     frames,
   };
+}
+
+/** Drop the first/last 15% of frames (onset/offset transitions) when there are
+ * enough to spare; otherwise keep all. */
+function steadyMiddle(frames: FrameResult[]): FrameResult[] {
+  if (frames.length < 10) return frames;
+  const trim = Math.floor(frames.length * 0.15);
+  return frames.slice(trim, frames.length - trim);
 }
 
 /** Median of the positive, finite values (0/NaN are treated as "missing"). */
