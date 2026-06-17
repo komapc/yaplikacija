@@ -65,10 +65,43 @@ cue that separates ы from open vowels). Result on the labelled set —
 separation with no сэн take reaching 70. A handful of back-vowel measurement
 outliers still slip through (~5–10%).
 
-## Known limitation / future work
+## Four-speaker validation; и/у calibration tested, NOT adopted
 
-Absolute F2 is **speaker-dependent**: validated on one (male-range) speaker.
-A woman's or child's ы (~15–20% higher F2) would score lower against the fixed
-~1500 Hz target. The principled fix (vocal-tract-length normalisation) needs a
-more robust F3 than we get on short CVC words, or a brief per-user vowel-space
-calibration. The `f2f3`/`adaptTarget` scaffolding remains dormant for that.
+To check the speaker-dependence worry, we collected и/ы/у (+ words) from four
+speakers spanning a wide vocal-tract range:
+
+| speaker | age/sex | и F2 | у F2 | **ы F2** | midpoint k = (ы−у)/(и−у) |
+|---------|---------|------|------|----------|--------------------------|
+| mark    | M 46    | 2040 | 840  | **1430** | 0.49 |
+| P       | M 85    | 1856 | 711  | **1224** | 0.45 |
+| Лена    | F       | 2600 | 610  | **1560** | 0.48 |
+| Yana    | F       | 3191 | (mis-measured) | **1340** | ≈0.29 |
+
+Two findings:
+
+1. **The fixed absolute-F2 window already covers everyone.** All four speakers'
+   ы fall in **1224–1560**, inside the deployed target `1450 ± 230` = [1220, 1680];
+   every non-ы vowel (у 610–840, о ~1050, э ~1960, и 1856–3191) is outside it.
+   The cross-speaker ы spread is far narrower than raw formant-scaling implied —
+   incl. **two female speakers**.
+
+2. **A per-speaker и↔у calibration would have *hurt*, not helped.** Three
+   speakers put ы at the и/у midpoint (k ≈ 0.47), but **Yana's ы (a confirmed,
+   clean ы by listening) sits at k ≈ 0.29** — a real individual difference. A
+   fixed-k calibration would place her target ~1800 and **reject her good ы**,
+   whereas absolute F2 accepts it. (Yana's у also mis-measured — F2 1457, above
+   her ы — the back-vowel LPC merge again.)
+
+**Conclusion:** keep **absolute F2**; do not ship the и/у (or F2/F3) calibration.
+The `f2f3`/`adaptTarget` scaffolding stays dormant. Re-open only with a more
+robust formant tracker (closed-phase / weighted-LP) that measures back vowels
+and very high voices reliably.
+
+## Remaining limitation
+
+The fixed window is validated across **4 adult voices (2 M, 2 F)** but **not a
+child** — a young child's ы (F2 well above 1680) would still fall outside and
+under-score. That, plus the ~5–10% back-vowel measurement outliers, are the open
+items; both need better formant estimation rather than scoring tweaks.
+
+_Dataset: see `samples/DATASET.md` (gitignored)._
