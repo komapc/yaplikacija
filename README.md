@@ -21,6 +21,7 @@ There are two modes:
 - [docs/STATUS.md](docs/STATUS.md) — what's built (features, pipeline, tooling).
 - [docs/ASSESSMENT.md](docs/ASSESSMENT.md) — honest strengths & limitations.
 - [docs/ROADMAP.md](docs/ROADMAP.md) — future plans.
+- [docs/native-validation.md](docs/native-validation.md) — native-speaker test results (Ы vs neighbours).
 
 ## How the analysis works
 
