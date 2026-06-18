@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="tile" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#161b23"/>
+      <stop offset="1" stop-color="#0a0c10"/>
+    </linearGradient>
+    <linearGradient id="ink" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#43eaa9"/>
+      <stop offset="1" stop-color="#23c585"/>
+    </linearGradient>
+    <radialGradient id="aura" cx="0.32" cy="0.2" r="0.9">
+      <stop offset="0" stop-color="#2fe39b" stop-opacity="0.28"/>
+      <stop offset="0.6" stop-color="#2fe39b" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="blur" filterUnits="userSpaceOnUse" x="0" y="0" width="64" height="64">
+      <feGaussianBlur stdDeviation="2.4"/>
+    </filter>
+  </defs>
+
+  <!-- tile -->
+  <rect x="2" y="2" width="60" height="60" rx="15" fill="url(#tile)"/>
+  <rect x="2" y="2" width="60" height="60" rx="15" fill="url(#aura)"/>
+  <rect x="2.75" y="2.75" width="58.5" height="58.5" rx="14.25" fill="none"
+        stroke="#2fe39b" stroke-opacity="0.22" stroke-width="1.5"/>
+
+  <!-- Ы: a Ь (stem + bottom bowl) and a separate vertical bar.
+       Glow = a blurred mint duplicate behind the crisp gradient strokes. -->
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <g stroke="#2fe39b" stroke-width="7" opacity="0.6" filter="url(#blur)">
+      <path d="M21 17 V47"/>
+      <path d="M21 31 H30 Q38 31 38 39 Q38 47 30 47 H21"/>
+      <path d="M46 17 V47"/>
+    </g>
+    <g stroke="url(#ink)" stroke-width="6.5">
+      <path d="M21 17 V47"/>
+      <path d="M21 31 H30 Q38 31 38 39 Q38 47 30 47 H21"/>
+      <path d="M46 17 V47"/>
+    </g>
+  </g>
+</svg>

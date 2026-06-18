@@ -88,16 +88,25 @@ body::before {
   color: transparent;
 }
 
-/* Segmented tab bar */
+/* Segmented tab bar — always a single row; scrolls horizontally if it can't
+   fit, rather than wrapping onto a second line. */
 .tabs {
   display: flex;
   gap: 4px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  width: fit-content;
+  max-width: 100%;
+  margin-top: 14px;
   padding: 4px;
   background: rgba(255, 255, 255, 0.035);
   border: 1px solid var(--hairline);
   border-radius: 999px;
+  overflow-x: auto;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* old Edge */
 }
+.tabs::-webkit-scrollbar { display: none; } /* WebKit */
+.tab { flex: 0 0 auto; }
 .tab {
   background: transparent;
   color: var(--muted);
@@ -410,6 +419,9 @@ button.ghost:disabled { opacity: 0.35; cursor: default; }
   #app { padding: 14px 12px 30px; }
   .trainer { margin-top: 16px; }
   .brand { font-size: 15px; }
+  /* Fit all five tabs across a phone without wrapping or scrolling. */
+  .tabs { gap: 2px; padding: 3px; width: 100%; justify-content: space-between; }
+  .tab { padding: 7px 7px; font-size: 12.5px; }
   .glyph { font-size: 72px; }
   .word-text { font-size: 48px; }
   .prompt { font-size: 17px; margin: 16px 0 4px; }

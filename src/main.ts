@@ -21,9 +21,9 @@ const app = document.querySelector<HTMLDivElement>("#app")!;
 app.innerHTML = `
   <header class="topbar">
     <div class="brand">Аппликация Ы</div>
-    <nav class="tabs" id="tabs"></nav>
     <button class="about-btn" id="about-btn" aria-label="How it works">ⓘ</button>
   </header>
+  <nav class="tabs" id="tabs"></nav>
   <main class="trainer" id="view"></main>
   <div class="modal" id="about" hidden>
     <div class="modal-card">
