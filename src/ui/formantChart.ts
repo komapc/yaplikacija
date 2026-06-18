@@ -124,14 +124,14 @@ export function drawFormantChart(
     const { rx, ry } = ringPx(score);
     ctx.beginPath();
     ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
-    ctx.fillStyle = `rgba(72, 199, 142, ${fill})`;
-    ctx.strokeStyle = "rgba(72, 199, 142, 0.55)";
+    ctx.fillStyle = `rgba(47, 227, 155, ${fill})`;
+    ctx.strokeStyle = "rgba(47, 227, 155, 0.55)";
     ctx.lineWidth = 1.5;
     ctx.fill();
     ctx.stroke();
   }
-  ctx.fillStyle = "rgba(72, 199, 142, 0.95)";
-  ctx.font = "bold 13px system-ui, sans-serif";
+  ctx.fillStyle = "rgba(47, 227, 155, 0.95)";
+  ctx.font = "700 14px Unbounded, system-ui, sans-serif";
   ctx.fillText(target.letter, cx - 5, cy + 5);
 
   if (!result || result.frames.length === 0) return;
@@ -199,8 +199,8 @@ function drawAttemptEllipse(ctx: CanvasRenderingContext2D, pts: { px: number; py
   const b = Math.max(3, k * Math.sqrt(Math.max(0, l2)));
   ctx.beginPath();
   ctx.ellipse(mx, my, a, b, angle, 0, Math.PI * 2);
-  ctx.fillStyle = "rgba(255, 107, 107, 0.18)";
-  ctx.strokeStyle = "rgba(255, 107, 107, 0.7)";
+  ctx.fillStyle = "rgba(255, 111, 111, 0.18)";
+  ctx.strokeStyle = "rgba(255, 111, 111, 0.7)";
   ctx.lineWidth = 1.5;
   ctx.fill();
   ctx.stroke();
@@ -209,7 +209,7 @@ function drawAttemptEllipse(ctx: CanvasRenderingContext2D, pts: { px: number; py
 function drawYouDot(ctx: CanvasRenderingContext2D, ux: number, uy: number): void {
   ctx.beginPath();
   ctx.arc(ux, uy, 7, 0, Math.PI * 2);
-  ctx.fillStyle = "rgba(255, 107, 107, 0.95)";
+  ctx.fillStyle = "rgba(255, 111, 111, 0.95)";
   ctx.fill();
   ctx.lineWidth = 2;
   ctx.strokeStyle = "#fff";
@@ -230,7 +230,7 @@ function drawArrow(ctx: CanvasRenderingContext2D, ex: number, ey: number, angle:
   ctx.lineTo(-size * 0.7, size * 0.7);
   ctx.lineTo(-size * 0.7, -size * 0.7);
   ctx.closePath();
-  ctx.fillStyle = "rgba(255, 107, 107, 0.95)";
+  ctx.fillStyle = "rgba(255, 111, 111, 0.95)";
   ctx.fill();
   ctx.lineWidth = 1.5;
   ctx.strokeStyle = "#fff";
