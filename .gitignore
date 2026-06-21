@@ -5,3 +5,9 @@ dist
 
 # personal reference recordings
 samples/
+
+# Android signing secrets — never commit
+*.keystore
+*.jks
+android/key.properties
+android/local.properties

@@ -7,6 +7,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
+    "build:app": "tsc --noEmit && BUILD_TARGET=app vite build",
+    "cap:sync": "npm run build:app && cap sync android",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit -p tsconfig.test.json",
     "test": "vitest run",
@@ -17,11 +19,17 @@
     "analyze:samples": "tsx scripts/analyze-samples.ts"
   },
   "devDependencies": {
+    "@capacitor/assets": "^3.0.5",
+    "@capacitor/cli": "^6.2.1",
     "audio-decode": "^3.10.2",
     "jsdom": "^29.1.1",
     "tsx": "^4.22.4",
     "typescript": "^5.5.0",
     "vite": "^5.4.0",
     "vitest": "^4.1.9"
+  },
+  "dependencies": {
+    "@capacitor/android": "^6.2.1",
+    "@capacitor/core": "^6.2.1"
   }
 }

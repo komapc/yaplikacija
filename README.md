@@ -140,13 +140,64 @@ Vitest unit tests live in `test/`, covering the pure (browser-free) core:
 Audio capture (`src/audio`) and the canvas UI (`src/ui`) depend on browser-only
 APIs (`getUserMedia`, `AudioContext`, canvas) and are exercised manually.
 
-## Android (later)
+## Android (Google Play)
 
-The build output is static, so wrapping with Capacitor is straightforward:
+The web app is wrapped in a native shell with [Capacitor](https://capacitorjs.com)
+for Google Play. The `android/` native project is committed.
+
+The **app** build uses a relative base (`BUILD_TARGET=app`) so assets resolve from
+the WebView root, instead of the `/yaplikacija/` subpath the web deploy needs.
 
 ```bash
-npm i -D @capacitor/cli && npm i @capacitor/core @capacitor/android
-npx cap init && npx cap add android && npm run build && npx cap sync
+npm run cap:sync          # build:app (relative base) + cap sync android
+npx cap open android      # open in Android Studio
+npx cap run android       # build + run on a device/emulator
 ```
 
-Add the `RECORD_AUDIO` permission to the Android manifest.
+**Microphone:** `RECORD_AUDIO` (+ `MODIFY_AUDIO_SETTINGS`) is declared in the
+manifest and requested at runtime in `MainActivity`, so the WebView may grant
+`getUserMedia`. Audio is processed on-device and never leaves it (see
+[privacy policy](https://komapc.github.io/yaplikacija/privacy.html)).
+
+### Release signing
+
+Releases are signed with an **upload key** (Play App Signing holds the real app
+key). Gradle reads credentials from `android/key.properties` (local, git-ignored)
+or, failing that, from environment variables (CI):
+
+```
+# android/key.properties — do NOT commit
+storeFile=/absolute/path/to/upload-keystore.jks
+storePassword=...
+keyAlias=upload
+keyPassword=...
+```
+
+Local signed bundle:
+
+```bash
+npm run cap:sync
+cd android && ./gradlew bundleRelease
+# → android/app/build/outputs/bundle/release/app-release.aab
+```
+
+### CI
+
+`.github/workflows/android.yml` builds and signs the `.aab` on a `v*` tag (or
+manual dispatch) and uploads it as a build artifact. Requires repo **Actions
+secrets**: `ANDROID_KEYSTORE_BASE64` (base64 of the keystore),
+`ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD`.
+`versionName` comes from the tag, `versionCode` from the run number.
+
+```bash
+git tag v0.1.0 && git push origin v0.1.0   # triggers a signed build
+```
+
+### Publishing
+
+1. Download the `app-release-aab` artifact from the workflow run.
+2. Play Console → app → Internal testing → upload the `.aab`.
+3. Complete Data Safety (no data collected/shared — on-device only), content
+   rating, and the store listing (icon 512, feature graphic 1024×500,
+   screenshots) with the privacy-policy URL above.
+4. Test via the internal track, then promote to Production.

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Аппликация Ы</string>
+    <string name="title_activity_main">Аппликация Ы</string>
+    <string name="package_name">com.komapc.yaplikacija</string>
+    <string name="custom_url_scheme">com.komapc.yaplikacija</string>
+</resources>
