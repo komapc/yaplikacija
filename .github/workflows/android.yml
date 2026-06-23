@@ -1,11 +1,16 @@
 name: Android release bundle
 
-# Builds a signed Android App Bundle (.aab) for Google Play.
-#   - push a tag like v0.1.0  → versionName = 0.1.0, versionCode = run number
-#   - or run manually (workflow_dispatch) for a throwaway build
+# Builds a signed Android App Bundle (.aab) for Google Play, and — on a v* tag —
+# auto-publishes it to the Internal testing track.
+#   - push a tag like v0.1.0  → versionName = 0.1.0 → build + publish to internal
+#   - run manually (workflow_dispatch) → throwaway build, never published
 # Signing secrets (repo → Settings → Secrets → Actions):
 #   ANDROID_KEYSTORE_BASE64, ANDROID_KEYSTORE_PASSWORD,
 #   ANDROID_KEY_ALIAS, ANDROID_KEY_PASSWORD
+# Auto-publish secret (optional — the publish step self-skips until it exists):
+#   PLAY_SERVICE_ACCOUNT_JSON  (Play Developer API service-account key)
+# The Internal testing track must already have one release (seeded manually with
+# v0.1.0) before the Play API can update it.
 on:
   push:
     tags: ["v*"]
@@ -21,6 +26,10 @@ concurrency:
 jobs:
   bundle:
     runs-on: ubuntu-latest
+    env:
+      # Surfaced as env so the publish step's `if` can self-skip until the
+      # secret is configured (you can't reference secrets directly in `if`).
+      PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
     steps:
       - uses: actions/checkout@v4
 
@@ -63,7 +72,9 @@ jobs:
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
           ANDROID_VERSION_NAME: ${{ steps.ver.outputs.name }}
-          ANDROID_VERSION_CODE: ${{ github.run_number }}
+          # 1000 + run number → always-increasing and safely above the manual
+          # versionCode 1 already uploaded to the Internal testing track.
+          ANDROID_VERSION_CODE: ${{ 1000 + github.run_number }}
         run: ./gradlew bundleRelease --no-daemon
 
       - uses: actions/upload-artifact@v4
@@ -71,3 +82,18 @@ jobs:
           name: app-release-aab
           path: android/app/build/outputs/bundle/release/app-release.aab
           if-no-files-found: error
+
+      # --- Auto-publish to Google Play (Internal testing) ---
+      # Runs ONLY on a v* tag, never on manual dispatch. Requires the
+      # PLAY_SERVICE_ACCOUNT_JSON secret and a track already seeded with one
+      # release (the API can only update an existing track). Self-skips until
+      # the secret exists, so tag builds stay green meanwhile.
+      - name: Publish to Play (Internal testing)
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') && env.PLAY_SERVICE_ACCOUNT_JSON != ''
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: com.komapc.yaplikacija
+          releaseFiles: android/app/build/outputs/bundle/release/app-release.aab
+          tracks: internal
+          status: completed

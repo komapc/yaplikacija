@@ -184,20 +184,38 @@ cd android && ./gradlew bundleRelease
 ### CI
 
 `.github/workflows/android.yml` builds and signs the `.aab` on a `v*` tag (or
-manual dispatch) and uploads it as a build artifact. Requires repo **Actions
-secrets**: `ANDROID_KEYSTORE_BASE64` (base64 of the keystore),
-`ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD`.
-`versionName` comes from the tag, `versionCode` from the run number.
+manual dispatch), uploads it as a build artifact, and — on a tag — **auto-publishes
+it to the Internal testing track**. Requires repo **Actions secrets**:
+`ANDROID_KEYSTORE_BASE64` (base64 of the keystore), `ANDROID_KEYSTORE_PASSWORD`,
+`ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD`. `versionName` comes from the tag,
+`versionCode` is `1000 + run number` (always increasing, above the manual `1`).
 
 ```bash
-git tag v0.1.0 && git push origin v0.1.0   # triggers a signed build
+git tag v0.2.0 && git push origin v0.2.0   # build, sign, publish to internal
 ```
 
-### Publishing
+### Auto-publish to Play
 
-1. Download the `app-release-aab` artifact from the workflow run.
-2. Play Console → app → Internal testing → upload the `.aab`.
-3. Complete Data Safety (no data collected/shared — on-device only), content
-   rating, and the store listing (icon 512, feature graphic 1024×500,
-   screenshots) with the privacy-policy URL above.
-4. Test via the internal track, then promote to Production.
+The publish step uses [`r0adkll/upload-google-play`](https://github.com/r0adkll/upload-google-play),
+authenticating as a **Play Developer API service account**. One-time setup:
+
+1. **Service account** — Google Cloud Console → enable the *Google Play Android
+   Developer API* → create a service account → JSON key. In Play Console →
+   *Users and permissions*, invite the service-account email and grant the
+   **yaplikacija** app *Release to testing tracks*. (A single service account
+   can publish multiple apps — the same key already used for other apps works.)
+2. **Secret** — add the JSON as the repo secret `PLAY_SERVICE_ACCOUNT_JSON`
+   (`gh secret set PLAY_SERVICE_ACCOUNT_JSON < key.json`). Until it exists, the
+   publish step self-skips and tag builds stay green.
+3. **Seed the track once** — the API can only *update* a track that already has
+   a release. The Internal track was seeded by the manual v0.1.0 upload, so
+   every later tag auto-publishes.
+
+Promotion **Internal → Production** stays manual in the Play Console.
+
+### Store listing (one-time)
+
+Complete Data Safety (no data collected/shared — on-device only), content
+rating, and the store listing (icon 512, feature graphic 1024×500, screenshots —
+see `store/`) with the privacy-policy URL above. Test via the internal track,
+then promote to Production.
