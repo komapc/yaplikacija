@@ -1,20 +1,32 @@
 name: Android release bundle
 
-# Builds a signed Android App Bundle (.aab) for Google Play, and — on a v* tag —
-# auto-publishes it to the Internal testing track.
-#   - push a tag like v0.1.0  → versionName = 0.1.0 → build + publish to internal
-#   - run manually (workflow_dispatch) → throwaway build, never published
+# Builds a signed Android App Bundle (.aab) for Google Play and publishes it to
+# the Internal testing track. Two ways to publish (both need PLAY_SERVICE_ACCOUNT_JSON):
+#   - push a tag like v0.1.0            → versionName = 0.1.0 → build + publish
+#   - workflow_dispatch with publish=true → build + publish (no git tag needed);
+#     versionName from the `version` input, or 0.0.0-<sha> if left blank
+#   - workflow_dispatch with publish=false → throwaway build, never published
+# So a release can be shipped with just:  gh workflow run android.yml -f publish=true -f version=0.1.2
 # Signing secrets (repo → Settings → Secrets → Actions):
 #   ANDROID_KEYSTORE_BASE64, ANDROID_KEYSTORE_PASSWORD,
 #   ANDROID_KEY_ALIAS, ANDROID_KEY_PASSWORD
-# Auto-publish secret (optional — the publish step self-skips until it exists):
+# Auto-publish secret (the publish step self-skips until it exists):
 #   PLAY_SERVICE_ACCOUNT_JSON  (Play Developer API service-account key)
-# The Internal testing track must already have one release (seeded manually with
-# v0.1.0) before the Play API can update it.
+# The Internal testing track must already have one release (seeded manually) before
+# the Play API can update it — it does (release 0.0.1, Jun 2026).
 on:
   push:
     tags: ["v*"]
   workflow_dispatch:
+    inputs:
+      publish:
+        description: "Publish the build to Play Internal testing"
+        type: boolean
+        default: false
+      version:
+        description: "versionName (e.g. 0.1.2); blank → 0.0.0-<sha>"
+        type: string
+        default: ""
 
 permissions:
   contents: read
@@ -51,10 +63,14 @@ jobs:
       # Derive the version from the tag (fallback for manual runs).
       - name: Compute version
         id: ver
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
         run: |
           REF="${GITHUB_REF_NAME}"
           if [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
             echo "name=${REF#v}" >> "$GITHUB_OUTPUT"
+          elif [[ -n "${INPUT_VERSION}" ]]; then
+            echo "name=${INPUT_VERSION}" >> "$GITHUB_OUTPUT"
           else
             echo "name=0.0.0-${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
           fi
@@ -90,12 +106,15 @@ jobs:
           if-no-files-found: error
 
       # --- Auto-publish to Google Play (Internal testing) ---
-      # Runs ONLY on a v* tag, never on manual dispatch. Requires the
-      # PLAY_SERVICE_ACCOUNT_JSON secret and a track already seeded with one
-      # release (the API can only update an existing track). Self-skips until
-      # the secret exists, so tag builds stay green meanwhile.
+      # Publishes on a v* tag, or on a manual dispatch with publish=true. Requires
+      # the PLAY_SERVICE_ACCOUNT_JSON secret and a track already seeded with one
+      # release (the API can only update an existing track). Self-skips until the
+      # secret exists, so builds stay green meanwhile.
       - name: Publish to Play (Internal testing)
-        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') && env.PLAY_SERVICE_ACCOUNT_JSON != ''
+        if: >-
+          env.PLAY_SERVICE_ACCOUNT_JSON != '' &&
+          ((github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) ||
+           (github.event_name == 'workflow_dispatch' && inputs.publish))
         uses: r0adkll/upload-google-play@v1
         with:
           serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
