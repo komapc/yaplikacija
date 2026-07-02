@@ -223,3 +223,47 @@ gracefully but a closed-phase/GCI tracker is still the eventual fix.
 
 _Dataset: see `samples/DATASET.md` (gitignored). Open corpus: `corpus/` +
 `corpus/ATTRIBUTION.md` (committed)._
+
+## Burg estimator + minimal-pair eval (2026-07-02)
+
+To answer "can the tracker be improved", we (a) built a **labelled minimal-pair
+eval set** — `samples/eval-corpus/` (gitignored), 43 native tokens: ы-words that
+must PASS (пыл, быть, мышка, пыль×2, тыква, …), и-words that must be REJECTED
+(бить, вить, нить, мир, пить, сила, сито, зима, …), and other vowels — from
+Wikimedia Commons + Lingua Libre, adding **6 new speakers**; and (b) benchmarked
+tracker variants with `scripts/eval-variants.ts` (Ы-score AUC + F2 error vs Praat
+over the same window). Positives are split into **clean** (labial/velar/sibilant
+context, the audio truly holds [ɨ]) vs **fronted** (coronal/palatal context, the
+native audio itself measures ~2000 Hz — a target/pedagogy issue no tracker can
+fix), so "tracker quality" = clean-ы vs non-ы separation.
+
+**Adopted: Burg's method** (`burgCoefficients` in `src/dsp/lpc.ts`, now the
+default for `estimateFormants`; the lag-windowed autocorrelation path is kept as
+`method: "autocorrelation"`). Burg is what Praat uses.
+
+| variant | clean-ы AUC | false-accepts @60 | median \|ΔF2\| vs Praat |
+|---------|-------------|-------------------|-------------------------|
+| autocorrelation (old) | 0.881 | 0/16 | 109 Hz |
+| **Burg (new)** | **0.935** | **0/16** | **71 Hz** (praat:compare, all 12 words) |
+
+- **No clean-token regression**, and it fixes the worst female case: Kerbush's
+  пыль read a spurious F2 2417 (→ score 0) under autocorrelation, **1551 (score
+  63)** under Burg. Praat-agreement across the calibration words improved
+  **105 → 71 Hz** mean.
+- **Accepted per-word targets are unchanged (±15 Hz)**, so recalibration wasn't
+  needed and self-consistency holds (Burg and autocorrelation agree on the easy
+  clean words; Burg's win is on the hard female/back-vowel frames).
+
+**Tested and rejected** (all made things worse or added risk for no gain, kept
+here so they aren't re-tried):
+- **Downsampling to 10–11 kHz** (Praat-style lower ceiling): F1/F2 merge pushes
+  и *into* the ы zone — сила scored 74, a false accept. AUC 0.79 → 0.72.
+- **Low LPC order (10–14)**: median ΔF2 blows out to 250–350 Hz.
+- **F0-adaptive lag window, 40 ms frames, "split-F1" slot repair**: each nudged
+  clean-AUC up a little but either hurt F2 fidelity (40 ms → 210 Hz) or
+  introduced new false accepts / clean-token regressions (slot repair pushed
+  мышка 84 → 59). Not worth the complexity.
+
+_Reproduce: `npx tsx scripts/eval-variants.ts` (variant grid, needs
+`~/.local/bin/praat_barren`) and `npx tsx scripts/eval-discrimination.ts`
+(score/AUC only). Eval corpus provenance: `samples/eval-corpus/README.md`._

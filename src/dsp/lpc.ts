@@ -62,6 +62,60 @@ export function lagWindow(r: Float64Array, sampleRate: number, bandwidthHz = 50)
 }
 
 /**
+ * Burg's method: estimate the LPC polynomial A(z) directly from the (windowed)
+ * frame by minimising forward+backward prediction error, without an explicit
+ * autocorrelation. Returns coefficients A(z) = 1 + a[1]z^-1 + ... in the same
+ * convention as `levinsonDurbin`, or null on a degenerate frame.
+ *
+ * Burg is the estimator Praat uses ("To Formant (burg)"). On this app's corpus
+ * it separates ы from и/у markedly better than autocorrelation LPC (clean-ы vs
+ * non-ы AUC 0.88 → 0.94) and resolves the F1/F2 pole-merge that made some
+ * higher-pitched (female) tokens read a spurious ~2400 Hz F2. See
+ * `scripts/eval-variants.ts` for the benchmark.
+ */
+export function burgCoefficients(x: Float64Array, order: number): Float64Array | null {
+  const n = x.length;
+  if (n <= order) return null;
+  // Forward/backward prediction-error sequences, seeded with the signal itself.
+  const f = Float64Array.from(x);
+  const b = Float64Array.from(x);
+  const a = new Float64Array(order + 1);
+  a[0] = 1;
+
+  // Denominator of the first reflection coefficient.
+  let den = 0;
+  for (let i = 0; i < n; i++) den += 2 * x[i] * x[i];
+  den -= x[0] * x[0] + x[n - 1] * x[n - 1];
+  if (den <= 0) return null;
+
+  const prev = new Float64Array(order + 1);
+  for (let m = 1; m <= order; m++) {
+    // Reflection coefficient k = -2·Σ f·b / (Σ f² + Σ b²).
+    let num = 0;
+    for (let i = m; i < n; i++) num += f[i] * b[i - 1];
+    const k = (-2 * num) / den;
+    if (!Number.isFinite(k)) return null;
+
+    // Update the polynomial: a_m[j] = a_{m-1}[j] + k·a_{m-1}[m-j].
+    prev.set(a);
+    for (let j = 1; j <= m; j++) a[j] = prev[j] + k * prev[m - j];
+
+    // Update the forward/backward errors in place (walk high→low so b[i-1] is
+    // still the previous iteration's value when read).
+    for (let i = n - 1; i >= m; i--) {
+      const fi = f[i];
+      f[i] = fi + k * b[i - 1];
+      b[i] = b[i - 1] + k * fi;
+    }
+
+    // Recurrence for the next denominator (Andersen's update).
+    den = den * (1 - k * k) - f[m] * f[m] - b[n - 1] * b[n - 1];
+    if (den <= 0) break;
+  }
+  return a;
+}
+
+/**
  * Levinson-Durbin recursion. Returns LPC coefficients as the polynomial
  * A(z) = 1 + a[1]z^-1 + ... + a[order]z^-order (a[0] === 1), or null if the
  * frame carries no energy.
@@ -144,23 +198,8 @@ export interface Formant {
   bandwidth: number; // Hz
 }
 
-/**
- * Estimate formants from one frame of samples.
- * Returns formants sorted by frequency (F1, F2, F3, ...).
- */
-export function estimateFormants(
-  frame: Float32Array,
-  sampleRate: number,
-  order = 2 + Math.round(sampleRate / 1000),
-): Formant[] {
-  const emphasised = preEmphasis(frame);
-  const windowed = hammingWindow(emphasised);
-  // Lag-window the autocorrelation before the recursion to stabilise the poles
-  // (broadens bandwidths slightly; suppresses spurious/merged formants).
-  const r = lagWindow(autocorrelate(windowed, order), sampleRate);
-  const a = levinsonDurbin(r, order);
-  if (!a) return [];
-
+/** Convert LPC-polynomial roots to sorted, plausibility-filtered formants. */
+function rootsToFormants(a: Float64Array, sampleRate: number): Formant[] {
   const roots = polynomialRoots(a);
   const formants: Formant[] = [];
   for (const z of roots) {
@@ -178,6 +217,37 @@ export function estimateFormants(
   }
   formants.sort((x, y) => x.freq - y.freq);
   return formants;
+}
+
+export type LpcMethod = "burg" | "autocorrelation";
+
+/**
+ * Estimate formants from one frame of samples.
+ * Returns formants sorted by frequency (F1, F2, F3, ...).
+ *
+ * Defaults to Burg's method — it discriminates the target vowels better and is
+ * robust to the F1/F2 pole-merge on high-pitched voices (see `burgCoefficients`
+ * and `scripts/eval-variants.ts`). Pass `method: "autocorrelation"` for the
+ * older lag-windowed autocorrelation path (kept for regression comparison).
+ */
+export function estimateFormants(
+  frame: Float32Array,
+  sampleRate: number,
+  order = 2 + Math.round(sampleRate / 1000),
+  method: LpcMethod = "burg",
+): Formant[] {
+  const windowed = hammingWindow(preEmphasis(frame));
+  let a: Float64Array | null;
+  if (method === "burg") {
+    a = burgCoefficients(windowed, order);
+  } else {
+    // Lag-window the autocorrelation before the recursion to stabilise the poles
+    // (broadens bandwidths slightly; suppresses spurious/merged formants).
+    const r = lagWindow(autocorrelate(windowed, order), sampleRate);
+    a = levinsonDurbin(r, order);
+  }
+  if (!a) return [];
+  return rootsToFormants(a, sampleRate);
 }
 
 // --- minimal complex arithmetic -------------------------------------------

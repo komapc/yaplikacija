@@ -7,8 +7,10 @@ exists and [ROADMAP.md](ROADMAP.md) for plans.
 
 - **Privacy & cost** — 100% client-side. No backend, no audio upload, no API
   keys, no per-use cost; works offline once loaded; free static hosting.
-- **Validated DSP** — the formant tracker agrees with Praat to ~15 Hz on F1,
-  ~105 Hz on F2, ~86 Hz on F3 (see `praat:compare`, `validate:f3`).
+- **Validated DSP** — the formant tracker (Burg's method, as Praat uses) agrees
+  with Praat to ~16 Hz on F1, ~71 Hz on F2 (see `praat:compare`, `validate:f3`).
+  A labelled minimal-pair eval (`samples/eval-corpus/`, `scripts/eval-variants.ts`)
+  scores clean-ы vs non-ы at AUC 0.94 with zero false accepts.
 - **Validated on a native speaker** — a controlled minimal set (сон/сун/син/
   сан/сюн/сён) confirmed scoring rejects non-ы vowels with absolute F2 (~38–48),
   and exposed that the F2/F3-ratio speaker-normalisation made it *worse* (wrong
@@ -21,7 +23,7 @@ exists and [ROADMAP.md](ROADMAP.md) for plans.
 - **Discriminative word scoring** — grading the energy-based vowel nucleus
   (target-independent) means a wrong vowel scores low; an earlier
   best-matching-window approach cherry-picked and scored almost anything 90%+.
-- **Test + CI discipline** — 45 tests gate every deploy; Praat regression tools
+- **Test + CI discipline** — 65 tests gate every deploy; Praat regression tools
   (`praat:compare`, `validate:f3`) exist; a synthetic-vowel harness validates the
   estimator against ground truth.
 

@@ -5,6 +5,7 @@ import {
   autocorrelate,
   lagWindow,
   levinsonDurbin,
+  burgCoefficients,
   polynomialRoots,
   estimateFormants,
 } from "../src/dsp/lpc";
@@ -52,6 +53,32 @@ describe("levinsonDurbin", () => {
     const a = levinsonDurbin(r, 10);
     expect(a).not.toBeNull();
     expect(a![0]).toBe(1);
+  });
+});
+
+describe("burgCoefficients", () => {
+  it("returns null when the frame is shorter than the order", () => {
+    expect(burgCoefficients(new Float64Array([1, 2, 3]), 5)).toBeNull();
+  });
+
+  it("returns null for a zero-energy frame", () => {
+    expect(burgCoefficients(new Float64Array(64), 10)).toBeNull();
+  });
+
+  it("produces a monic polynomial (a[0] === 1)", () => {
+    const a = burgCoefficients(hammingWindow(synthVowel(120, [{ f: 800, bw: 80 }], 0.05, 16000)), 10);
+    expect(a).not.toBeNull();
+    expect(a![0]).toBe(1);
+  });
+
+  it("recovers a resonator's centre frequency from its roots", () => {
+    const sig = synthVowel(120, [{ f: 1200, bw: 90 }], 0.3, 16000);
+    const a = burgCoefficients(hammingWindow(preEmphasis(sig.subarray(2000, 2400))), 18);
+    expect(a).not.toBeNull();
+    const freqs = polynomialRoots(a!)
+      .filter((z) => z.im > 0)
+      .map((z) => (Math.atan2(z.im, z.re) * 16000) / (2 * Math.PI));
+    expect(freqs.some((f) => f > 1050 && f < 1350)).toBe(true);
   });
 });
 
@@ -109,5 +136,18 @@ describe("estimateFormants", () => {
     const formants = estimateFormants(sig.subarray(2000, 2400), 16000);
     expect(formants.length).toBeGreaterThan(0);
     for (const f of formants) expect(f.bandwidth).toBeGreaterThan(0);
+  });
+
+  it("recovers F1/F2 with either estimator (burg default and autocorrelation)", () => {
+    const sig = synthVowel(115, [{ f: 650, bw: 80 }, { f: 1700, bw: 110 }], 0.3, 16000);
+    const frame = sig.subarray(2000, 2400);
+    for (const method of ["burg", "autocorrelation"] as const) {
+      const f = estimateFormants(frame, 16000, undefined, method);
+      expect(f.length, method).toBeGreaterThanOrEqual(2);
+      expect(f[0].freq, method).toBeGreaterThan(500);
+      expect(f[0].freq, method).toBeLessThan(800);
+      expect(f[1].freq, method).toBeGreaterThan(1500);
+      expect(f[1].freq, method).toBeLessThan(1900);
+    }
   });
 });
