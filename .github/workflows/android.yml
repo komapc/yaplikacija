@@ -31,9 +31,9 @@ jobs:
       # secret is configured (you can't reference secrets directly in `if`).
       PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: 24
           cache: npm
@@ -42,11 +42,11 @@ jobs:
       # Web build with the relative base (BUILD_TARGET=app) + copy into android/.
       - run: npm run cap:sync
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: 21
-      - uses: android-actions/setup-android@v3
+      - uses: android-actions/setup-android@v4
 
       # Derive the version from the tag (fallback for manual runs).
       - name: Compute version
@@ -58,6 +58,12 @@ jobs:
           else
             echo "name=0.0.0-${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
           fi
+          # versionCode = 1000 + run number, computed in shell: GitHub Actions
+          # template expressions have no arithmetic operators, so doing the
+          # addition in an expression is a syntax error that invalidates the
+          # whole workflow file. (Keep the += out of any workflow expression,
+          # including comments — templates are interpolated even inside run:.)
+          echo "code=$((1000 + GITHUB_RUN_NUMBER))" >> "$GITHUB_OUTPUT"
 
       - name: Decode upload keystore
         env:
@@ -74,10 +80,10 @@ jobs:
           ANDROID_VERSION_NAME: ${{ steps.ver.outputs.name }}
           # 1000 + run number → always-increasing and safely above the manual
           # versionCode 1 already uploaded to the Internal testing track.
-          ANDROID_VERSION_CODE: ${{ 1000 + github.run_number }}
+          ANDROID_VERSION_CODE: ${{ steps.ver.outputs.code }}
         run: ./gradlew bundleRelease --no-daemon
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: app-release-aab
           path: android/app/build/outputs/bundle/release/app-release.aab
