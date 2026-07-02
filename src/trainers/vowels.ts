@@ -38,6 +38,35 @@ export function classifyVowel(f1: number, f2: number): VowelId | null {
   return best;
 }
 
+/** Normalised distance from (F1,F2) to a vowel centroid, in the same units as
+ * `classifyVowel` (so F1 and F2 are weighted by their perceptual spread). */
+function centroidDist(f1: number, f2: number, c: Centroid): number {
+  return Math.sqrt(((f1 - c.f1) / N1) ** 2 + ((f2 - c.f2) / N2) ** 2);
+}
+
+/**
+ * How dominant «ы» is over the nearest OTHER vowel at (F1, F2), as a 0..1 gain.
+ * 1 when ы is clearly the closest Russian vowel; it falls toward 0 as another
+ * vowel (usually э or и) becomes closer. Multiplying the Ы score by this rejects
+ * an attempt that is really э/и even when it happens to sit near the ы target in
+ * raw distance — the failure the absolute-distance scorer can't see. Speaker-
+ * INDEPENDENT: uses the shared literature centroids, not any per-user tuning, so
+ * it discriminates by *relative* vowel geometry rather than absolute Hz.
+ */
+export function yeryDominance(f1: number, f2: number): number {
+  if (!(f1 > 0) || !(f2 > 0)) return 0;
+  const yy = CENTROIDS.find((c) => c.id === "ы")!;
+  const dY = centroidDist(f1, f2, yy);
+  let dOther = Infinity;
+  for (const c of CENTROIDS) if (c.id !== "ы") dOther = Math.min(dOther, centroidDist(f1, f2, c));
+  const margin = dOther - dY; // > 0 when ы is the nearest vowel
+  // Map the margin (normalised-distance units) to a gain. The knee sits just
+  // below 0 so a ы that is nearest-but-close-to-a-neighbour (e.g. a back ы
+  // brushing у, or a fronted ы brushing и) keeps partial credit, while an
+  // attempt a competitor clearly owns (э/и, margin ≪ 0) is driven to ~0.
+  return Math.max(0, Math.min(1, (margin + 0.2) / 0.45));
+}
+
 export interface FallingWord {
   text: string;
   emoji: string;

@@ -23,7 +23,7 @@ exists and [ROADMAP.md](ROADMAP.md) for plans.
 - **Discriminative word scoring** — grading the energy-based vowel nucleus
   (target-independent) means a wrong vowel scores low; an earlier
   best-matching-window approach cherry-picked and scored almost anything 90%+.
-- **Test + CI discipline** — 65 tests gate every deploy; Praat regression tools
+- **Test + CI discipline** — 69 tests gate every deploy; Praat regression tools
   (`praat:compare`, `validate:f3`) exist; a synthetic-vowel harness validates the
   estimator against ground truth.
 

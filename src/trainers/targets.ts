@@ -5,6 +5,7 @@
 // browser mic are noisy. Tuning these is the main "knob" for difficulty.
 
 import type { AnalysisResult } from "../dsp/analyze";
+import { yeryDominance } from "./vowels";
 
 export interface FormantTarget {
   center: number; // Hz
@@ -135,7 +136,15 @@ export function scoreAttempt(target: SoundTarget, result: AnalysisResult): Score
   const d1 = (result.f1 - t.f1.center) / t.f1.tolerance;
   const d2 = (result.f2 - t.f2.center) / t.f2.tolerance;
   const dist = Math.sqrt((w1 * d1 * d1 + w2 * d2 * d2) / (w1 + w2));
-  const overall = Math.max(0, Math.round(100 * (1 - dist / 3)));
+  let overall = Math.max(0, Math.round(100 * (1 - dist / 3)));
+  // Competitor gate (Ы only): distance-to-target alone can't tell "near the ы
+  // zone" from "actually a different vowel that overlaps it" — e.g. a back
+  // speaker whose э sits in the ы F2 band. Suppress the score unless ы is the
+  // NEAREST Russian vowel, so an attempt that is really э/и can't read as a good
+  // ы. Uses shared centroids (relative geometry), not per-user calibration.
+  if (t.id === "yery") {
+    overall = Math.round(overall * yeryDominance(result.f1, result.f2));
+  }
 
   let feedback = buildFeedback(t, result, overall);
   // If the vowel was not held steadily (F2 wandered more than a tolerance width),

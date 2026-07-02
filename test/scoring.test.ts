@@ -95,6 +95,17 @@ describe("scoreAttempt", () => {
     expect(e).toBeLessThan(yy - 15);
   });
 
+  it("competitor gate: an э in the ы F2 band loses to a back ы (shifted vowel space)", () => {
+    const t = TARGETS.yery;
+    // Real speaker numbers: their ы sits at F2 ~1137 (below the absolute ы band),
+    // their э at F2 ~1635 (inside it). Absolute distance ties them; the gate must
+    // rank the real ы clearly above the э rather than crowning the э a perfect ы.
+    const yy = scoreAttempt(t, result(353, 1137)).overall;
+    const e = scoreAttempt(t, result(429, 1635)).overall;
+    expect(e).toBeLessThan(20);
+    expect(yy).toBeGreaterThan(e + 15);
+  });
+
   it("keeps scores within 0..100", () => {
     for (const t of Object.values(TARGETS)) {
       for (const f2 of [0, 500, t.f2.center, 3000, 8000]) {
