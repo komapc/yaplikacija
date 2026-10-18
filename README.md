@@ -146,7 +146,7 @@ The web app is wrapped in a native shell with [Capacitor](https://capacitorjs.co
 for Google Play. The `android/` native project is committed.
 
 The **app** build uses a relative base (`BUILD_TARGET=app`) so assets resolve from
-the WebView root, instead of the `/yaplikacija/` subpath the web deploy needs.
+the WebView root, instead of the absolute `/` base the web deploy uses.
 
 ```bash
 npm run cap:sync          # build:app (relative base) + cap sync android
@@ -157,7 +157,7 @@ npx cap run android       # build + run on a device/emulator
 **Microphone:** `RECORD_AUDIO` (+ `MODIFY_AUDIO_SETTINGS`) is declared in the
 manifest and requested at runtime in `MainActivity`, so the WebView may grant
 `getUserMedia`. Audio is processed on-device and never leaves it (see
-[privacy policy](https://komapc.github.io/yaplikacija/privacy.html)).
+[privacy policy](https://yaplikacija.lipu.dev/privacy.html)).
 
 ### Release signing
 

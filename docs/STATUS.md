@@ -1,6 +1,6 @@
 # Status — what's built
 
-_Last updated: 2026-06-16. Live: <https://komapc.github.io/yaplikacija/>_
+_Last updated: 2026-06-16. Live: <https://yaplikacija.lipu.dev/>_
 
 Yaplikacija is a browser pronunciation trainer for two sounds that are hard for
 non-native speakers: the Russian vowel **Ы** `[ɨ]` and the Hebrew/Arabic **Ain**
