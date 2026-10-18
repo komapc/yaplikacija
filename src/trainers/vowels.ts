@@ -4,6 +4,10 @@
 
 export type VowelId = "и" | "ы" | "э" | "а" | "о" | "у";
 
+/** Canonical Ы centre (Hz) — single source: the trainer's target zone and the
+ * vowel-classifier centroid below both use it, so they cannot drift apart. */
+export const YERY_CENTER = { f1: 340, f2: 1450 } as const;
+
 interface Centroid {
   id: VowelId;
   f1: number;
@@ -13,7 +17,7 @@ interface Centroid {
 const CENTROIDS: Centroid[] = [
   { id: "и", f1: 330, f2: 2100 },
   { id: "э", f1: 500, f2: 1800 },
-  { id: "ы", f1: 340, f2: 1450 },
+  { id: "ы", ...YERY_CENTER },
   { id: "а", f1: 700, f2: 1300 },
   { id: "о", f1: 480, f2: 1000 },
   { id: "у", f1: 330, f2: 800 },

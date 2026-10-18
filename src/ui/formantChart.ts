@@ -7,6 +7,7 @@
 
 import type { SoundTarget } from "../trainers/targets";
 import type { AnalysisResult, FrameResult } from "../dsp/analyze";
+import { t } from "../i18n";
 
 const ANCHORS: { label: string; f1: number; f2: number }[] = [
   { label: "и/i", f1: 300, f2: 2200 },
@@ -79,11 +80,11 @@ export function drawFormantChart(
   ctx.strokeRect(pad, pad, plotW, plotH);
   ctx.fillStyle = "rgba(255,255,255,0.4)";
   ctx.font = "10px system-ui, sans-serif";
-  ctx.fillText("F2 (front ← → back)", pad, pad - 12);
+  ctx.fillText(t("chart.f2"), pad, pad - 12);
   ctx.save();
   ctx.translate(13, pad + plotH);
   ctx.rotate(-Math.PI / 2);
-  ctx.fillText("F1 (close ← → open)", 0, 0);
+  ctx.fillText(t("chart.f1"), 0, 0);
   ctx.restore();
 
   // Reference anchors that fall inside the zoomed view.
@@ -216,7 +217,7 @@ function drawYouDot(ctx: CanvasRenderingContext2D, ux: number, uy: number): void
   ctx.stroke();
   ctx.fillStyle = "#fff";
   ctx.font = "11px system-ui, sans-serif";
-  ctx.fillText("you", ux + 10, uy + 4);
+  ctx.fillText(t("chart.you"), ux + 10, uy + 4);
 }
 
 /** Arrowhead at an edge pointing toward the off-chart result. */
@@ -238,7 +239,7 @@ function drawArrow(ctx: CanvasRenderingContext2D, ex: number, ey: number, angle:
   ctx.restore();
   ctx.fillStyle = "#fff";
   ctx.font = "11px system-ui, sans-serif";
-  ctx.fillText("you (off-chart)", clampLabel(ex), ey - 12);
+  ctx.fillText(t("chart.offChart"), clampLabel(ex), ey - 12);
 }
 
 function clamp(v: number, lo: number, hi: number): number {

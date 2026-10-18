@@ -156,6 +156,7 @@ body::before {
   transition: color 0.15s, border-color 0.15s;
 }
 .about-btn:hover { color: var(--text); border-color: var(--accent); }
+#lang-btn { font-size: 12px; font-weight: 700; letter-spacing: 0.02em; }
 
 .trainer { margin-top: 24px; }
 

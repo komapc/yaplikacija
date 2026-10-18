@@ -7,27 +7,28 @@ import { YERY_EXERCISES, exerciseTarget } from "../trainers/exercises";
 import { drawFormantChart } from "../ui/formantChart";
 import { holdToRecord } from "../ui/record";
 import { createPlayer } from "../ui/play";
+import { getLang, t as tr } from "../i18n";
 import type { View } from "./types";
 
 export function createWord(recorder: Recorder): View {
   const el = document.createElement("div");
   el.innerHTML = `
     <div class="word-nav">
-      <button class="nav-arrow" id="w-prev" aria-label="Previous">‹</button>
+      <button class="nav-arrow" id="w-prev" aria-label="${tr("word.prev")}">‹</button>
       <div class="word-card">
         <div class="word-text" id="w-text"></div>
         <div class="word-meta"><span id="w-tr"></span> · <span id="w-ipa"></span> · <span id="w-gloss"></span></div>
       </div>
-      <button class="nav-arrow" id="w-next" aria-label="Next">›</button>
+      <button class="nav-arrow" id="w-next" aria-label="${tr("word.next")}">›</button>
     </div>
     <div class="word-controls">
-      <button class="ghost" id="w-ref">▶ Reference</button>
+      <button class="ghost" id="w-ref">${tr("word.ref")}</button>
       <span class="word-progress" id="w-prog"></span>
     </div>
-    <p class="hint">Listen, then say the word — keep the «ы» steady.</p>
+    <p class="hint">${tr("word.hint")}</p>
     <div class="controls">
-      <button class="record" id="w-rec">🎙️ hold &amp; speak</button>
-      <button class="ghost" id="w-play" disabled>▶ play my attempt</button>
+      <button class="record" id="w-rec">${tr("common.hold")}</button>
+      <button class="ghost" id="w-play" disabled>${tr("common.play")}</button>
     </div>
     <p class="status" id="w-status"></p>
     <div class="result" id="w-result" hidden>
@@ -48,11 +49,11 @@ export function createWord(recorder: Recorder): View {
     q("w-text").textContent = ex.text;
     q("w-tr").textContent = ex.translit;
     q("w-ipa").textContent = ex.ipa;
-    q("w-gloss").textContent = ex.gloss;
+    q("w-gloss").textContent = getLang() === "en" ? ex.gloss : ""; // glosses are English; the word is Russian already
     q("w-prog").textContent = `${idx + 1} / ${YERY_EXERCISES.length}`;
     q<HTMLButtonElement>("w-ref").disabled = ex.audioUrl === "";
-    q("w-status").textContent = "Hold the button and say the whole word.";
-    q("w-attr").textContent = ex.attribution ? `Reference: ${ex.attribution}` : "";
+    q("w-status").textContent = tr("word.status0");
+    q("w-attr").textContent = ex.attribution ? tr("word.reference", { a: ex.attribution }) : "";
     q<HTMLButtonElement>("w-play").disabled = true;
     lastBlob = null;
     q("w-result").hidden = true;
@@ -70,8 +71,8 @@ export function createWord(recorder: Recorder): View {
   });
 
   const teardown = holdToRecord(q("w-rec"), recorder, {
-    onStart: () => (q("w-status").textContent = "Listening… say the word."),
-    onError: () => (q("w-status").textContent = "Could not access the microphone."),
+    onStart: () => (q("w-status").textContent = tr("word.listening")),
+    onError: () => (q("w-status").textContent = tr("common.micError")),
     onResult: ({ samples, sampleRate, blob }) => {
       lastBlob = blob;
       q<HTMLButtonElement>("w-play").disabled = false;
@@ -83,11 +84,11 @@ export function createWord(recorder: Recorder): View {
       q("w-ring").style.setProperty("--pct", String(score.overall));
       q("w-fb").textContent =
         !match.found || result.frames.length === 0
-          ? "I could not find a clear «ы» — say it slowly and stretch the «ы»."
+          ? tr("word.noNucleus")
           : score.feedback;
       q("w-fm").textContent =
-        result.frames.length > 0 ? `Your ы: F1 ≈ ${Math.round(result.f1)} Hz, F2 ≈ ${Math.round(result.f2)} Hz` : "";
-      q("w-status").textContent = "Try again, or move on.";
+        result.frames.length > 0 ? tr("common.yourVowel", { letter: "ы", f1: Math.round(result.f1), f2: Math.round(result.f2) }) : "";
+      q("w-status").textContent = tr("word.again");
       drawFormantChart(chart, target, result);
     },
   });

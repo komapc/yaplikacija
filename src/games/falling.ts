@@ -5,6 +5,7 @@ import type { Recorder } from "../audio/recorder";
 import { analyzeBuffer } from "../dsp/analyze";
 import { classifyVowel, FALLING_WORDS, type FallingWord } from "../trainers/vowels";
 import { holdToRecord } from "../ui/record";
+import { t as tr } from "../i18n";
 import type { View } from "../views/types";
 
 const START_MS = 7000; // time for the first word to fall
@@ -15,12 +16,12 @@ const CHIP_H = 52;
 export function createFalling(recorder: Recorder): View {
   const el = document.createElement("div");
   el.innerHTML = `
-    <div class="game-head"><div class="game-title">🌧 Дождь слов</div><div id="f-lives">♥♥♥</div></div>
-    <p class="hint">Say each falling word before it lands. We listen for its vowel.</p>
+    <div class="game-head"><div class="game-title">${tr("falling.title")}</div><div id="f-lives">♥♥♥</div></div>
+    <p class="hint">${tr("falling.hint")}</p>
     <div class="fall-field" id="f-field"></div>
-    <p class="status" id="f-fb">Hold the button and say the word.</p>
-    <div class="game-score">score <b id="f-score">0</b></div>
-    <button class="record" id="f-rec">🎙️ hold &amp; speak</button>`;
+    <p class="status" id="f-fb">${tr("falling.status0")}</p>
+    <div class="game-score">${tr("common.score")} <b id="f-score">0</b></div>
+    <button class="record" id="f-rec">${tr("common.hold")}</button>`;
   const q = <T extends HTMLElement>(id: string) => el.querySelector<T>("#" + id)!;
   const field = q("f-field");
 
@@ -52,7 +53,7 @@ export function createFalling(recorder: Recorder): View {
     cur = null;
     if (lives <= 0) {
       over = true;
-      q("f-fb").textContent = `💀 ${msg} — score ${score}. Hold to play again.`;
+      q("f-fb").textContent = tr("falling.over", { msg, score });
     } else {
       q("f-fb").textContent = msg;
       spawn();
@@ -64,7 +65,7 @@ export function createFalling(recorder: Recorder): View {
       const h = field.clientHeight || 240;
       const prog = (ts - cur.start) / fallMs;
       cur.chip.style.top = `${Math.min(prog, 1) * (h - CHIP_H)}px`;
-      if (prog >= 1) loseLife(`«${cur.word.text}» landed!`);
+      if (prog >= 1) loseLife(tr("falling.landed", { w: cur.word.text }));
     }
     raf = requestAnimationFrame(loop);
   }
@@ -81,7 +82,7 @@ export function createFalling(recorder: Recorder): View {
   }
 
   const teardown = holdToRecord(q("f-rec"), recorder, {
-    onError: () => (q("f-fb").textContent = "Mic error — check permissions."),
+    onError: () => (q("f-fb").textContent = tr("common.micErrorShort")),
     onResult: ({ samples, sampleRate }) => {
       if (over) {
         restart();
@@ -93,14 +94,14 @@ export function createFalling(recorder: Recorder): View {
       if (v === cur.word.vowel) {
         score += 100;
         q("f-score").textContent = String(score);
-        q("f-fb").textContent = `✓ ${cur.word.text}!`;
+        q("f-fb").textContent = tr("falling.ok", { w: cur.word.text });
         q("f-fb").className = "status hit";
         cur.chip.remove();
         cur = null;
         fallMs = Math.max(MIN_MS, fallMs - SPEEDUP_MS);
         spawn();
       } else {
-        q("f-fb").textContent = `heard «${v ?? "?"}» — that word needs «${cur.word.vowel}»`;
+        q("f-fb").textContent = tr("falling.heard", { v: v ?? "?", need: cur.word.vowel });
         q("f-fb").className = "status miss";
       }
     },

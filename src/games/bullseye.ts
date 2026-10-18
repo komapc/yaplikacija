@@ -7,6 +7,7 @@ import { resampleTo } from "../dsp/resample";
 import { analyzeBuffer } from "../dsp/analyze";
 import { TARGETS, scoreAttempt } from "../trainers/targets";
 import { drawFormantChart } from "../ui/formantChart";
+import { t as tr } from "../i18n";
 import type { View } from "../views/types";
 
 const HIT = 65;
@@ -17,12 +18,12 @@ export function createBullseye(_recorder: Recorder): View {
   const t = TARGETS.yery;
   const el = document.createElement("div");
   el.innerHTML = `
-    <div class="game-head"><div class="game-title">🎯 Мишень — ${t.letter}</div><div class="combo" id="b-combo">combo ×0</div></div>
-    <p class="hint">Tap Start, then say «ы» again and again — the mic stays open. Each hit (≥${HIT}) builds your combo.</p>
+    <div class="game-head"><div class="game-title">${tr("bullseye.title", { l: t.letter })}</div><div class="combo" id="b-combo">${tr("bullseye.combo", { n: 0 })}</div></div>
+    <p class="hint">${tr("bullseye.hint", { hit: HIT })}</p>
     <canvas class="chart" id="b-chart"></canvas>
-    <p class="status" id="b-fb">Tap Start and say «ы».</p>
-    <div class="game-score">score <b id="b-score">0</b> · best combo <b id="b-best">0</b></div>
-    <button class="record" id="b-toggle">🎙️ Start listening</button>`;
+    <p class="status" id="b-fb">${tr("bullseye.status0")}</p>
+    <div class="game-score">${tr("common.score")} <b id="b-score">0</b> · ${tr("bullseye.bestCombo")} <b id="b-best">0</b></div>
+    <button class="record" id="b-toggle">${tr("bullseye.start")}</button>`;
   const q = <T extends HTMLElement>(id: string) => el.querySelector<T>("#" + id)!;
   const chart = q<HTMLCanvasElement>("b-chart");
   const mic = new LiveMic();
@@ -42,14 +43,14 @@ export function createBullseye(_recorder: Recorder): View {
       const mult = Math.min(combo, MAX_MULT);
       const pts = s * mult;
       score += pts;
-      q("b-fb").textContent = `✦ HIT ${s} ×${mult} = +${pts}`;
+      q("b-fb").textContent = tr("bullseye.hit", { s, mult, pts });
       q("b-fb").className = "status hit";
     } else {
       combo = 0;
-      q("b-fb").textContent = `✗ miss (${s}) — combo reset`;
+      q("b-fb").textContent = tr("bullseye.miss", { s });
       q("b-fb").className = "status miss";
     }
-    q("b-combo").textContent = `combo ×${combo}`;
+    q("b-combo").textContent = tr("bullseye.combo", { n: combo });
     q("b-score").textContent = String(score);
     q("b-best").textContent = String(best);
     drawFormantChart(chart, t, result);
@@ -62,18 +63,18 @@ export function createBullseye(_recorder: Recorder): View {
         .start(onUtterance)
         .then(() => {
           listening = true;
-          toggle.textContent = "⏸ Stop";
+          toggle.textContent = tr("bullseye.stop");
           toggle.classList.add("active");
-          q("b-fb").textContent = "🔴 listening — say «ы»";
+          q("b-fb").textContent = tr("bullseye.live");
           q("b-fb").className = "status";
         })
-        .catch(() => (q("b-fb").textContent = "Could not access the microphone."));
+        .catch(() => (q("b-fb").textContent = tr("common.micError")));
     } else {
       mic.stop();
       listening = false;
-      toggle.textContent = "🎙️ Start listening";
+      toggle.textContent = tr("bullseye.start");
       toggle.classList.remove("active");
-      q("b-fb").textContent = "Paused. Tap Start to continue.";
+      q("b-fb").textContent = tr("bullseye.paused");
     }
   });
 

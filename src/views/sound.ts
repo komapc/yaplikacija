@@ -6,6 +6,7 @@ import { TARGETS, scoreAttempt } from "../trainers/targets";
 import { drawFormantChart } from "../ui/formantChart";
 import { holdToRecord } from "../ui/record";
 import { createPlayer } from "../ui/play";
+import { t as tr } from "../i18n";
 import type { View } from "./types";
 
 export function createSound(recorder: Recorder): View {
@@ -19,10 +20,10 @@ export function createSound(recorder: Recorder): View {
     <p class="prompt">${t.prompt}</p>
     <p class="hint">${t.hint}</p>
     <div class="controls">
-      <button class="record" id="s-rec">🎙️ hold &amp; speak</button>
-      <button class="ghost" id="s-play" disabled>▶ play my attempt</button>
+      <button class="record" id="s-rec">${tr("common.hold")}</button>
+      <button class="ghost" id="s-play" disabled>${tr("common.play")}</button>
     </div>
-    <p class="status" id="s-status">Hold the button and sustain the sound for about a second.</p>
+    <p class="status" id="s-status">${tr("sound.status0")}</p>
     <div class="result" id="s-result" hidden>
       <div class="score-ring" id="s-ring"><span id="s-num">0</span></div>
       <div class="score-text"><div class="feedback" id="s-fb"></div><div class="formants" id="s-fm"></div></div>
@@ -39,8 +40,8 @@ export function createSound(recorder: Recorder): View {
   });
 
   const teardown = holdToRecord(q("s-rec"), recorder, {
-    onStart: () => (q("s-status").textContent = "Listening… keep it steady."),
-    onError: () => (q("s-status").textContent = "Could not access the microphone."),
+    onStart: () => (q("s-status").textContent = tr("sound.listening")),
+    onError: () => (q("s-status").textContent = tr("common.micError")),
     onResult: ({ samples, sampleRate, blob }) => {
       lastBlob = blob;
       q<HTMLButtonElement>("s-play").disabled = false;
@@ -52,9 +53,9 @@ export function createSound(recorder: Recorder): View {
       q("s-fb").textContent = score.feedback;
       q("s-fm").textContent =
         result.frames.length > 0
-          ? `Your ${t.letter}: F1 ≈ ${Math.round(result.f1)} Hz, F2 ≈ ${Math.round(result.f2)} Hz`
+          ? tr("common.yourVowel", { letter: t.letter, f1: Math.round(result.f1), f2: Math.round(result.f2) })
           : "";
-      q("s-status").textContent = "Try again to improve.";
+      q("s-status").textContent = tr("sound.again");
       drawFormantChart(chart, t, result);
     },
   });
