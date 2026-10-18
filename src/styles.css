@@ -233,6 +233,17 @@ body::before {
   letter-spacing: 0.06em;
   font-variant-numeric: tabular-nums;
 }
+.word-best { color: var(--accent); font-size: 12px; font-weight: 700; margin-left: auto; }
+.wave-cap { color: var(--muted); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; margin: 14px 0 6px; }
+.wave {
+  width: 100%;
+  height: 72px;
+  background: var(--panel);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  display: block;
+}
+.wave[hidden], .wave-cap[hidden] { display: none; }
 .attribution { color: var(--muted); font-size: 11px; line-height: 1.5; margin-top: 12px; opacity: 0.75; }
 
 /* ── Buttons ──────────────────────────────────────────────────────────── */

@@ -97,6 +97,9 @@ const en = {
   "word.noNucleus": "I could not find a clear «ы» — say it slowly and stretch the «ы».",
   "word.again": "Try again, or move on.",
   "word.reference": "Reference: {a}",
+  "word.best": "best {n}",
+  "word.newBest": "New best: {n}!",
+  "word.scored": "Scored segment",
   "word.prev": "Previous",
   "word.next": "Next",
 
@@ -219,6 +222,9 @@ const ru: Record<keyof typeof en, string> = {
   "word.noNucleus": "Не нашёл чёткого «ы» — скажи медленно и протяни «ы».",
   "word.again": "Попробуй ещё раз или иди дальше.",
   "word.reference": "Эталон: {a}",
+  "word.best": "рекорд {n}",
+  "word.newBest": "Новый рекорд: {n}!",
+  "word.scored": "Оценённый участок",
   "word.prev": "Назад",
   "word.next": "Вперёд",
 

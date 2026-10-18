@@ -7,6 +7,8 @@ import { YERY_EXERCISES, exerciseTarget } from "../trainers/exercises";
 import { drawFormantChart } from "../ui/formantChart";
 import { holdToRecord } from "../ui/record";
 import { createPlayer } from "../ui/play";
+import { drawWaveform } from "../ui/waveform";
+import { getBest, recordScore } from "../progress";
 import { getLang, t as tr } from "../i18n";
 import type { View } from "./types";
 
@@ -24,6 +26,7 @@ export function createWord(recorder: Recorder): View {
     <div class="word-controls">
       <button class="ghost" id="w-ref">${tr("word.ref")}</button>
       <span class="word-progress" id="w-prog"></span>
+      <span class="word-best" id="w-best"></span>
     </div>
     <p class="hint">${tr("word.hint")}</p>
     <div class="controls">
@@ -36,9 +39,18 @@ export function createWord(recorder: Recorder): View {
       <div class="score-text"><div class="feedback" id="w-fb"></div><div class="formants" id="w-fm"></div></div>
     </div>
     <canvas class="chart" id="w-chart"></canvas>
+    <div class="wave-cap" id="w-wave-cap" hidden>${tr("word.scored")}</div>
+    <canvas class="wave" id="w-wave" hidden></canvas>
     <p class="attribution" id="w-attr"></p>`;
   const q = <T extends HTMLElement>(id: string) => el.querySelector<T>("#" + id)!;
   const chart = q<HTMLCanvasElement>("w-chart");
+  const wave = q<HTMLCanvasElement>("w-wave");
+  let take: { samples: Float32Array; rate: number; region: { startSec: number; endSec: number } | null } | null = null;
+  const showBest = () => {
+    const b = getBest(YERY_EXERCISES[idx].id);
+    q("w-best").textContent = b === null ? "" : "★ " + tr("word.best", { n: b });
+  };
+  const drawWave = () => take && drawWaveform(wave, take.samples, take.rate, take.region);
   const player = createPlayer();
   let idx = 0;
   let lastBlob: Blob | null = null;
@@ -56,7 +68,11 @@ export function createWord(recorder: Recorder): View {
     q("w-attr").textContent = ex.attribution ? tr("word.reference", { a: ex.attribution }) : "";
     q<HTMLButtonElement>("w-play").disabled = true;
     lastBlob = null;
+    take = null;
     q("w-result").hidden = true;
+    q("w-wave").hidden = true;
+    q("w-wave-cap").hidden = true;
+    showBest();
     drawFormantChart(chart, exerciseTarget(ex), null);
   }
 
@@ -88,13 +104,27 @@ export function createWord(recorder: Recorder): View {
           : score.feedback;
       q("w-fm").textContent =
         result.frames.length > 0 ? tr("common.yourVowel", { letter: "ы", f1: Math.round(result.f1), f2: Math.round(result.f2) }) : "";
-      q("w-status").textContent = tr("word.again");
+      const ex = YERY_EXERCISES[idx];
+      if (match.found && result.frames.length > 0) {
+        const { best, improved } = recordScore(ex.id, score.overall);
+        showBest();
+        q("w-status").textContent = improved && score.overall > 0 ? tr("word.newBest", { n: best }) : tr("word.again");
+      } else {
+        q("w-status").textContent = tr("word.again");
+      }
+      take = { samples, rate: sampleRate, region: match.found ? match : null };
+      q("w-wave").hidden = false;
+      q("w-wave-cap").hidden = false;
+      drawWave();
       drawFormantChart(chart, target, result);
     },
   });
 
   select(0);
-  const onResize = () => drawFormantChart(chart, exerciseTarget(YERY_EXERCISES[idx]), null);
+  const onResize = () => {
+    drawFormantChart(chart, exerciseTarget(YERY_EXERCISES[idx]), null);
+    drawWave();
+  };
   window.addEventListener("resize", onResize);
   return {
     element: el,
