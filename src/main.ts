@@ -1,3 +1,22 @@
+// Fonts are bundled (no requests to Google Fonts: the app must not contact any server).
+import "@fontsource/onest/latin-400.css";
+import "@fontsource/onest/latin-ext-400.css";
+import "@fontsource/onest/cyrillic-400.css";
+import "@fontsource/onest/latin-500.css";
+import "@fontsource/onest/latin-ext-500.css";
+import "@fontsource/onest/cyrillic-500.css";
+import "@fontsource/onest/latin-600.css";
+import "@fontsource/onest/latin-ext-600.css";
+import "@fontsource/onest/cyrillic-600.css";
+import "@fontsource/onest/latin-700.css";
+import "@fontsource/onest/latin-ext-700.css";
+import "@fontsource/onest/cyrillic-700.css";
+import "@fontsource/unbounded/latin-600.css";
+import "@fontsource/unbounded/cyrillic-600.css";
+import "@fontsource/unbounded/latin-700.css";
+import "@fontsource/unbounded/cyrillic-700.css";
+import "@fontsource/unbounded/latin-800.css";
+import "@fontsource/unbounded/cyrillic-800.css";
 import "./styles.css";
 import { Recorder } from "./audio/recorder";
 import { createSound } from "./views/sound";
