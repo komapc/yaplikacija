@@ -36,7 +36,10 @@ export function createFalling(recorder: Recorder): View {
     const word = FALLING_WORDS[Math.floor(Math.random() * FALLING_WORDS.length)];
     const chip = document.createElement("div");
     chip.className = "fall-chip";
-    chip.innerHTML = `<span class="fall-emoji">${word.emoji}</span> ${word.text}`;
+    const emoji = document.createElement("span");
+    emoji.className = "fall-emoji";
+    emoji.textContent = word.emoji;
+    chip.append(emoji, ` ${word.text}`); // text nodes, not innerHTML: word data is never parsed as markup
     chip.style.top = "0px";
     field.appendChild(chip);
     cur = { word, start: performance.now(), chip };

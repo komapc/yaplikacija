@@ -8,6 +8,9 @@ export class Recorder {
   private mediaRecorder: MediaRecorder | null = null;
   private chunks: Blob[] = [];
   private stream: MediaStream | null = null;
+  // One decoding context for the app's lifetime: creating/closing one per take is
+  // wasteful and flaky on iOS/Safari (a context made outside a gesture can stay suspended).
+  private decodeCtx: AudioContext | null = null;
 
   async start(): Promise<void> {
     // Enable the browser's built-in voice cleanup. It removes broadband hiss /
@@ -39,9 +42,8 @@ export class Recorder {
     this.cleanup();
 
     const arrayBuf = await blob.arrayBuffer();
-    const decodeCtx = new AudioContext();
-    const decoded = await decodeCtx.decodeAudioData(arrayBuf.slice(0));
-    await decodeCtx.close();
+    this.decodeCtx ??= new AudioContext();
+    const decoded = await this.decodeCtx.decodeAudioData(arrayBuf.slice(0));
 
     const offline = new OfflineAudioContext(1, Math.ceil((decoded.duration * ANALYSIS_RATE)), ANALYSIS_RATE);
     const src = offline.createBufferSource();

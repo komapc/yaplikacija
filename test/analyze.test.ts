@@ -181,3 +181,29 @@ describe("findVowelNucleus run-finder", () => {
     expect(findVowelNucleus(jittery, 0.03).spread).toBeGreaterThan(findVowelNucleus(steady, 0.03).spread);
   });
 });
+
+describe("findVowelNucleus on short runs", () => {
+  const frame = (i: number, rms: number, f2 = 1500) => ({ timeSec: i * 0.01, f0: 120, f1: 350, f2, f3: 2500, rms });
+  const run = (loud: number, quietEdge = 3) => [
+    ...Array.from({ length: quietEdge }, (_, i) => frame(i, 0.001)),
+    ...Array.from({ length: loud }, (_, i) => frame(quietEdge + i, 0.2)),
+    ...Array.from({ length: quietEdge }, (_, i) => frame(quietEdge + loud + i, 0.001)),
+  ];
+
+  it("finds a run exactly as long as the minimum and measures it whole", () => {
+    const m = findVowelNucleus(run(5));
+    expect(m.found).toBe(true);
+    expect(m.frames).toHaveLength(5);
+    expect(m.f2).toBe(1500);
+  });
+
+  it("rejects a loud burst shorter than the minimum duration", () => {
+    expect(findVowelNucleus(run(4)).found).toBe(false);
+  });
+
+  it("honours a smaller minDurationSec but never windows below 3 frames", () => {
+    const m = findVowelNucleus(run(3), 0.01);
+    expect(m.found).toBe(true);
+    expect(m.frames.length).toBeGreaterThanOrEqual(3);
+  });
+});

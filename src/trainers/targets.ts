@@ -30,6 +30,7 @@ export interface SoundTarget {
    */
   weights: { f1: number; f2: number };
   /**
+   * DORMANT (see the note on `yery`): no target sets this today.
    * Optional target F2/F3 ratio. When set and the attempt has a usable F3, the
    * F2 target centre is taken as `f2f3 × F3` instead of the absolute `f2.center`
    * — a speaker-normalised "frontness" target (the ratio cancels vocal-tract
@@ -104,6 +105,7 @@ export interface Score {
 }
 
 /**
+ * DORMANT scaffolding — a no-op until a target sets `f2f3`.
  * Speaker-normalise the F2 target: when the sound defines a target F2/F3 ratio
  * and the attempt has a usable F3, place the F2 target at `f2f3 × F3`. This
  * cancels vocal-tract length, so a man, woman or child are all judged against
