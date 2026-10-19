@@ -10,8 +10,14 @@ if (keystorePropertiesFile.exists()) {
     keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
 }
 def releaseStorePath = keystoreProperties['storeFile'] ?: System.getenv('ANDROID_KEYSTORE_PATH')
-def appVersionCode = Integer.parseInt(System.getenv('ANDROID_VERSION_CODE') ?: '1')
-def appVersionName = System.getenv('ANDROID_VERSION_NAME') ?: '0.1.0'
+// Version: env overrides (CI) win; otherwise versionCode comes from
+// android/version.properties (bump it before every Play upload) and versionName
+// from package.json, so local builds no longer need hand-picked numbers.
+def versionProps = new Properties()
+rootProject.file("version.properties").withInputStream { versionProps.load(it) }
+def packageJson = new groovy.json.JsonSlurper().parse(rootProject.file("../package.json"))
+def appVersionCode = Integer.parseInt(System.getenv('ANDROID_VERSION_CODE') ?: versionProps['versionCode'])
+def appVersionName = System.getenv('ANDROID_VERSION_NAME') ?: packageJson.version
 
 android {
     namespace "com.komapc.yaplikacija"

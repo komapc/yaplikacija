@@ -1,6 +1,6 @@
 {
   "name": "yaplikacija",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "description": "Pronunciation trainer for hard sounds: Russian Ы [ɨ] and Hebrew/Arabic Ain [ʕ]",
