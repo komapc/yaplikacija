@@ -62,3 +62,11 @@ exists and [ROADMAP.md](ROADMAP.md) for plans.
   DSP change.
 - Manual target overrides live in `trainers/exercises.ts` and are easy to forget
   when re-calibrating — they intentionally take precedence over generated values.
+
+## Algorithm review follow-ups (2026-10-19)
+
+- `npm run synth:bias` synthesises vowels with known F1/F2 over F0 100–350 Hz. Baseline: F1 reads up to ~+100 Hz high for low-F1 vowels at F0 ≈ 130–250 Hz (the estimate is pulled toward a harmonic), i.e. more than the Ы F1 tolerance (±65). Real glottal sources are smoother than the impulse train used here, so treat it as a worst case. F2 mean error ≈ 35 Hz.
+- Sound-mode gate raised from 3 frames to 15 steady frames (~150 ms), with its own "too short" message.
+- Formants are picked by plausibility (`pickFormants`: F1 ≥ 180 Hz, F2 ≥ F1 + 200 Hz) rather than by pole rank. Neutral on the corpus, praat:compare and the synthetic sweep; it is a safety net against a spurious low pole.
+- Speaker scale (`trainers/speaker.ts`): one sustained «а» sets a vocal-tract scale (clamped 0.85–1.4); measured F1/F2 are divided by it before scoring and charting. Stored locally. Not yet validated on real female/child recordings.
+- Ain: its zone (700/1300) coincides with plain [a], so the formant-only score cannot separate them — one more reason the trainer stays hidden.

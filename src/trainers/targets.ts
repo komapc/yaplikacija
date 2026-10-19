@@ -7,6 +7,7 @@
 import type { AnalysisResult } from "../dsp/analyze";
 import { YERY_CENTER, yeryDominance } from "./vowels";
 import { t } from "../i18n";
+import { getSpeakerScale } from "./speaker";
 
 export interface FormantTarget {
   center: number; // Hz
@@ -81,6 +82,10 @@ export const TARGETS: Record<SoundTarget["id"], SoundTarget> = {
     get language() { return t("ain.language"); },
     get prompt() { return t("ain.prompt"); },
     get hint() { return t("ain.hint"); },
+    // KNOWN LIMITATION (trainer is hidden in the app for this reason): this zone
+    // nearly coincides with plain [a] (700/1300), so an ordinary «а» scores high.
+    // Formants alone cannot separate pharyngealisation; it would need spectral
+    // tilt / intensity / creak cues before this target can be shown to users.
     // Pharyngeal constriction: raised F1, low F2 — the two move toward each other.
     f1: { center: 700, tolerance: 125 },
     f2: { center: 1150, tolerance: 175 },
@@ -119,7 +124,18 @@ export function adaptTarget(target: SoundTarget, result: { f3: number }): SoundT
   return target;
 }
 
-export function scoreAttempt(target: SoundTarget, result: AnalysisResult): Score {
+/** Map this speaker's formants into the reference vowel space the targets are
+ * defined in (a no-op until the user calibrates). Used for scoring and so the
+ * chart plots the attempt where the scorer saw it. */
+export function toReferenceSpace(measured: AnalysisResult): AnalysisResult {
+  const k = getSpeakerScale();
+  if (k === 1) return measured;
+  return { ...measured, f1: measured.f1 / k, f2: measured.f2 / k, f3: measured.f3 / k };
+}
+
+export function scoreAttempt(target: SoundTarget, measured: AnalysisResult): Score {
+  const result = toReferenceSpace(measured);
+
   if (result.voicedRatio < 0.15 || result.frames.length < 3) {
     return {
       overall: 0,
@@ -127,6 +143,12 @@ export function scoreAttempt(target: SoundTarget, result: AnalysisResult): Score
       f2Score: 0,
       feedback: t("score.none"),
     };
+  }
+
+  // Sound mode: a click of voicing is not a held vowel. Word results carry no
+  // `sustainedFrames` (their nucleus has its own minimum duration).
+  if (result.sustainedFrames !== undefined && result.sustainedFrames < MIN_SUSTAINED_FRAMES) {
+    return { overall: 0, f1Score: 0, f2Score: 0, feedback: t("score.short") };
   }
 
   const tg = adaptTarget(target, result);
@@ -158,6 +180,9 @@ export function scoreAttempt(target: SoundTarget, result: AnalysisResult): Score
   }
   return { overall, f1Score, f2Score, feedback };
 }
+
+/** Minimum steady voiced frames (10 ms hop ⇒ ~150 ms) for a sound-mode score. */
+const MIN_SUSTAINED_FRAMES = 15;
 
 /** F2 spread (Hz) above which an attempt counts as "not held steady". Roughly a
  * full F2 tolerance width — by then the sound moved more than the target zone. */

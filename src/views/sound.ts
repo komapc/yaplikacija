@@ -2,7 +2,8 @@
 
 import type { Recorder } from "../audio/recorder";
 import { analyzeBuffer } from "../dsp/analyze";
-import { TARGETS, scoreAttempt } from "../trainers/targets";
+import { TARGETS, scoreAttempt, toReferenceSpace } from "../trainers/targets";
+import { scaleFromA, setSpeakerScale, isCalibrated } from "../trainers/speaker";
 import { drawFormantChart } from "../ui/formantChart";
 import { holdToRecord } from "../ui/record";
 import { createPlayer } from "../ui/play";
@@ -28,7 +29,16 @@ export function createSound(recorder: Recorder): View {
       <div class="score-ring" id="s-ring"><span id="s-num">0</span></div>
       <div class="score-text"><div class="feedback" id="s-fb"></div><div class="formants" id="s-fm"></div></div>
     </div>
-    <canvas class="chart" id="s-chart"></canvas>`;
+    <canvas class="chart" id="s-chart"></canvas>
+    <details class="calib">
+      <summary>${tr("calib.title")}</summary>
+      <p class="hint">${tr("calib.help")}</p>
+      <div class="controls">
+        <button class="record" id="s-cal">${tr("calib.hold")}</button>
+        <button class="ghost" id="s-cal-reset">${tr("calib.reset")}</button>
+      </div>
+      <p class="status" id="s-cal-status"></p>
+    </details>`;
   const q = <T extends HTMLElement>(id: string) => el.querySelector<T>("#" + id)!;
   const chart = q<HTMLCanvasElement>("s-chart");
   const player = createPlayer();
@@ -56,7 +66,28 @@ export function createSound(recorder: Recorder): View {
           ? tr("common.yourVowel", { letter: t.letter, f1: Math.round(result.f1), f2: Math.round(result.f2) })
           : "";
       q("s-status").textContent = tr("sound.again");
-      drawFormantChart(chart, t, result);
+      drawFormantChart(chart, t, toReferenceSpace(result));
+    },
+  });
+
+  const calStatus = () =>
+    (q("s-cal-status").textContent = isCalibrated() ? tr("calib.on") : tr("calib.off"));
+  calStatus();
+  q<HTMLButtonElement>("s-cal-reset").addEventListener("click", () => {
+    setSpeakerScale(null);
+    calStatus();
+  });
+  const teardownCal = holdToRecord(q("s-cal"), recorder, {
+    onStart: () => (q("s-cal-status").textContent = tr("sound.listening")),
+    onError: () => (q("s-cal-status").textContent = tr("common.micError")),
+    onResult: ({ samples, sampleRate }) => {
+      const r = analyzeBuffer(samples, sampleRate);
+      const s = (r.sustainedFrames ?? 0) >= 15 ? scaleFromA(r.f1, r.f2) : null;
+      if (s === null) q("s-cal-status").textContent = tr("calib.fail");
+      else {
+        setSpeakerScale(s);
+        calStatus();
+      }
     },
   });
 
@@ -66,6 +97,7 @@ export function createSound(recorder: Recorder): View {
     element: el,
     destroy: () => {
       teardown();
+      teardownCal();
       player.stop();
       window.removeEventListener("resize", onResize);
     },

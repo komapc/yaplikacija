@@ -1,7 +1,7 @@
 // High-level analysis: turn a buffer of mono PCM into robust (F1, F2, F3)
 // estimates by analysing voiced frames and taking medians over a steady region.
 
-import { estimateFormants } from "./lpc";
+import { estimateFormants, type Formant } from "./lpc";
 import { analyzeVoicing } from "./voicing";
 import { highpassFilter } from "./filter";
 
@@ -27,8 +27,28 @@ export interface AnalysisResult {
   /** F2 standard deviation over the steady portion (Hz) — how steadily the vowel
    * was held; high means the sound wandered (a glide or an unstable attempt). */
   spread: number;
+  /** Frames in the steady portion that was actually scored (10 ms each). Absent
+   * on word results, whose nucleus is gated separately. */
+  sustainedFrames?: number;
   frames: FrameResult[];
 }
+
+/** Pick F1/F2/F3 from the sorted LPC poles by plausibility rather than by rank.
+ * Taking the two lowest poles lets one spurious narrow pole (nasal or noise,
+ * often 150–250 Hz) become "F1" and push every real formant up a slot. We skip
+ * implausibly low or broad poles for F1, and require F2 to sit clear of F1. */
+export function pickFormants(poles: Formant[]): { f1: Formant; f2: Formant; f3: number } | null {
+  const f1 = poles.find((p) => p.freq >= F1_MIN_HZ && p.bandwidth <= F1_MAX_BW);
+  if (!f1) return null;
+  const f2 = poles.find((p) => p.freq >= f1.freq + MIN_F1_F2_GAP_HZ);
+  if (!f2) return null;
+  const f3 = poles.find((p) => p.freq > f2.freq + MIN_F1_F2_GAP_HZ / 2);
+  return { f1, f2, f3: f3 ? f3.freq : 0 };
+}
+
+const F1_MIN_HZ = 180;
+const F1_MAX_BW = 450; // Burg broadens a true F1 to ~350 Hz on high-pitched voices
+const MIN_F1_F2_GAP_HZ = 200;
 
 export function analyzeBuffer(input: Float32Array, sampleRate: number): AnalysisResult {
   // Noise filter: strip DC, rumble and mains hum below the formant range.
@@ -46,15 +66,14 @@ export function analyzeBuffer(input: Float32Array, sampleRate: number): Analysis
     const v = analyzeVoicing(frame, sampleRate);
     if (!v.voiced) continue;
 
-    const formants = estimateFormants(frame, sampleRate);
-    if (formants.length < 2) continue;
-    const f1 = formants[0].freq;
-    const f2 = formants[1].freq;
+    const picked = pickFormants(estimateFormants(frame, sampleRate));
+    if (!picked) continue;
+    const f1 = picked.f1.freq;
+    const f2 = picked.f2.freq;
     // Reject implausible formant pairs (noise / unstable LPC on consonantal or
     // nasal frames): F1 too low, F2 above the human range, or F2 not above F1.
     if (f1 < 150 || f2 > 3500 || f2 <= f1) continue;
-    const f3cand = formants.length >= 3 ? formants[2].freq : 0;
-    const f3 = f3cand > f2 && f3cand < 4500 ? f3cand : 0;
+    const f3 = picked.f3 > f2 && picked.f3 < 4500 ? picked.f3 : 0;
 
     voicedCount++;
     frames.push({
@@ -64,8 +83,8 @@ export function analyzeBuffer(input: Float32Array, sampleRate: number): Analysis
       f2,
       f3,
       rms: v.rms,
-      b1: formants[0].bandwidth,
-      b2: formants[1].bandwidth,
+      b1: picked.f1.bandwidth,
+      b2: picked.f2.bandwidth,
     });
   }
 
@@ -87,6 +106,7 @@ export function analyzeBuffer(input: Float32Array, sampleRate: number): Analysis
     f3: median(steady.map((f) => f.f3)),
     voicedRatio: total === 0 ? 0 : voicedCount / total,
     spread: stdev(steady.map((f) => f.f2)),
+    sustainedFrames: steady.length,
     frames,
   };
 }

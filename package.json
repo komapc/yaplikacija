@@ -15,6 +15,7 @@
     "test:watch": "vitest",
     "calibrate": "tsx scripts/calibrate-exercises.ts",
     "praat:compare": "tsx scripts/praat-compare.ts",
+    "synth:bias": "tsx scripts/synth-bias.ts",
     "validate:f3": "tsx scripts/validate-f3.ts",
     "analyze:samples": "tsx scripts/analyze-samples.ts"
   },
