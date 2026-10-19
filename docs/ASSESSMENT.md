@@ -10,7 +10,12 @@ exists and [ROADMAP.md](ROADMAP.md) for plans.
 - **Validated DSP** — the formant tracker (Burg's method, as Praat uses) agrees
   with Praat to ~16 Hz on F1, ~71 Hz on F2 (see `praat:compare`, `validate:f3`).
   A labelled minimal-pair eval (`samples/eval-corpus/`, `scripts/eval-variants.ts`)
-  scores clean-ы vs non-ы at AUC 0.94 with zero false accepts.
+  scores clean-ы vs non-ы with zero false accepts (0/38 at threshold 60). The AUC
+  was 0.935 on the earlier 16-token set; on the current corpus (15 clean tokens,
+  38 negatives) `eval-variants.ts` reports clean AUC 0.825 (full 0.668), with
+  7/15 clean ы scoring below 60 (false rejects) — checked 2026-10-19, identical
+  before and after the algorithm follow-ups below, so the gap is the corpus, not
+  a regression. In practice the scorer is strict rather than lenient.
 - **Validated on a native speaker** — a controlled minimal set (сон/сун/син/
   сан/сюн/сён) confirmed scoring rejects non-ы vowels with absolute F2 (~38–48),
   and exposed that the F2/F3-ratio speaker-normalisation made it *worse* (wrong
