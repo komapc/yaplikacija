@@ -1,5 +1,7 @@
 # Yaplikacija — pronunciation trainer
 
+**Live:** [yaplikacija.lipu.dev](https://yaplikacija.lipu.dev/)
+
 One web app, two trainers for sounds that are hard for non-native speakers:
 
 - **Аппликация Ы** — the Russian vowel **Ы** `[ɨ]`
