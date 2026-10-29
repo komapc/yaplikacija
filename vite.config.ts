@@ -15,6 +15,11 @@ import { pathOf, renderPage, renderSitemap } from "./src/seo";
 //     BUILD_TARGET=app (see the `build:app` npm script).
 const isApp = process.env.BUILD_TARGET === "app";
 
+// Cloudflare Web Analytics (cookieless). The site is on GitHub Pages, not
+// proxied by Cloudflare, so the beacon is embedded; web build only — the app
+// stays offline and untracked.
+const BEACON = `<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "395bdd1da14b45449f395d6233ea4080"}'></script>`;
+
 // Static SEO pages (src/seo.ts). index.html is always filled with the English
 // page; the web build also writes /ru/, /he/, /ar/ (same bundle, translated
 // static content, own lang/dir/canonical/hreflang) and sitemap.xml. The app
@@ -26,7 +31,10 @@ function seoPages(): Plugin {
     configResolved(c) {
       outDir = c.build.outDir;
     },
-    transformIndexHtml: (html) => renderPage(html, "en", !isApp),
+    transformIndexHtml: (html) => {
+      const page = renderPage(html, "en", !isApp);
+      return isApp ? page : page.replace("</head>", `${BEACON}\n  </head>`);
+    },
     closeBundle() {
       if (isApp) return;
       const template = readFileSync(join(outDir, "index.html"), "utf8");
