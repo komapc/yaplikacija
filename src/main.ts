@@ -24,7 +24,7 @@ import { createWord } from "./views/word";
 import { createBullseye } from "./games/bullseye";
 import { createDuel } from "./games/duel";
 import { createFalling } from "./games/falling";
-import { getLang, onLangChange, setLang, t, type Key } from "./i18n";
+import { LANGS, dirOf, getLang, onLangChange, setLang, t, type Key, type Lang } from "./i18n";
 import type { View } from "./views/types";
 
 // Ы-only for now (Ain trainer hidden — its target still lives in trainers/targets.ts).
@@ -69,11 +69,13 @@ const setAbout = (show: boolean) => (aboutModal.hidden = !show);
 // (Re)build the whole shell in the active language. Views are created on open(),
 // so resetting activeId and routing again re-creates the current one translated.
 function mount(): void {
-  const other = getLang() === "ru" ? "EN" : "RU";
+  const langOptions = LANGS.map(
+    (l) => `<option value="${l}"${l === getLang() ? " selected" : ""}>${l.toUpperCase()}</option>`,
+  ).join("");
   app.innerHTML = `
   <header class="topbar">
     <div class="brand">Аппликация Ы</div>
-    <button class="about-btn" id="lang-btn" aria-label="${t("app.switchLang")}">${other}</button>
+    <select class="about-btn lang-sel" id="lang-btn" aria-label="${t("app.switchLang")}">${langOptions}</select>
     <button class="about-btn" id="about-btn" aria-label="${t("app.about")}">ⓘ</button>
   </header>
   <nav class="tabs" id="tabs"></nav>
@@ -97,7 +99,8 @@ function mount(): void {
     tabsEl.appendChild(a);
   }
 
-  document.getElementById("lang-btn")!.addEventListener("click", () => setLang(getLang() === "ru" ? "en" : "ru"));
+  const langSel = document.getElementById("lang-btn") as HTMLSelectElement;
+  langSel.addEventListener("change", () => setLang(langSel.value as Lang));
   document.getElementById("about-btn")!.addEventListener("click", () => setAbout(true));
   document.getElementById("about-close")!.addEventListener("click", () => setAbout(false));
   aboutModal.addEventListener("click", (e) => {
@@ -117,6 +120,19 @@ window.addEventListener("hashchange", route);
 window.addEventListener("keydown", (e) => {
   if (e.key === "Escape") setAbout(false);
 });
-onLangChange(start);
+// On the web build each language has its own page (/, /ru/, /he/, /ar/); keep
+// the address in step with a switch so a reload or a shared link stays in the
+// chosen language. The app build (relative base, single page) has no such pages.
+function syncPath(): void {
+  if (import.meta.env.BASE_URL !== "/") return;
+  const l = getLang();
+  history.replaceState(null, "", (l === "en" ? "/" : `/${l}/`) + location.hash);
+}
+
+onLangChange(() => {
+  syncPath();
+  start();
+});
 document.documentElement.lang = getLang();
+document.documentElement.dir = dirOf(getLang());
 start();

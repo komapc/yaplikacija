@@ -81,7 +81,7 @@ body::before {
   font-weight: 800;
   font-size: 17px;
   letter-spacing: -0.01em;
-  margin-right: auto;
+  margin-inline-end: auto;
   background: linear-gradient(180deg, var(--text), #aab3c2);
   -webkit-background-clip: text;
   background-clip: text;
@@ -157,6 +157,17 @@ body::before {
 }
 .about-btn:hover { color: var(--text); border-color: var(--accent); }
 #lang-btn { font-size: 12px; font-weight: 700; letter-spacing: 0.02em; }
+/* Language picker: a native <select> styled like the round icon buttons. */
+.lang-sel {
+  width: auto;
+  border-radius: 999px;
+  padding: 0 10px;
+  font-family: var(--font-body);
+  appearance: none;
+  -webkit-appearance: none;
+  text-align: center;
+}
+.lang-sel option { background: var(--panel); color: var(--text); }
 
 .trainer { margin-top: 24px; }
 
@@ -233,7 +244,7 @@ body::before {
   letter-spacing: 0.06em;
   font-variant-numeric: tabular-nums;
 }
-.word-best { color: var(--accent); font-size: 12px; font-weight: 700; margin-left: auto; }
+.word-best { color: var(--accent); font-size: 12px; font-weight: 700; margin-inline-start: auto; }
 .wave-cap { color: var(--muted); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; margin: 14px 0 6px; }
 .wave {
   width: 100%;
@@ -300,7 +311,7 @@ button.ghost:disabled { opacity: 0.35; cursor: default; }
   gap: 20px;
   background: linear-gradient(180deg, var(--panel-2), var(--panel));
   border: 1px solid var(--hairline);
-  border-left: 3px solid var(--accent);
+  border-inline-start: 3px solid var(--accent);
   border-radius: var(--radius);
   padding: 20px;
   margin: 4px 0 20px;
@@ -377,12 +388,12 @@ button.ghost:disabled { opacity: 0.35; cursor: default; }
   letter-spacing: 0.08em;
 }
 .modal-card p, .modal-card li { color: var(--text); font-size: 14px; }
-.modal-card ul { margin: 6px 0; padding-left: 20px; }
+.modal-card ul { margin: 6px 0; padding-inline-start: 20px; }
 .modal-card .ipa { color: var(--accent); }
 .modal-close {
   position: absolute;
   top: 12px;
-  right: 14px;
+  inset-inline-end: 14px;
   background: transparent;
   border: none;
   color: var(--muted);
@@ -451,3 +462,14 @@ button.ghost:disabled { opacity: 0.35; cursor: default; }
   .word-text { font-size: 40px; }
   .chart { height: 200px; }
 }
+
+/* ── Static page content (src/seo.ts) ─────────────────────────────────────
+   Shown to crawlers and no-JS readers; main.ts replaces it with the app. */
+.seo-static { line-height: 1.6; }
+.seo-static h1 { font-family: var(--font-display); font-size: 22px; line-height: 1.3; }
+.seo-static h2 { font-family: var(--font-display); font-size: 18px; margin-top: 28px; color: var(--accent); }
+.seo-static h3 { font-size: 14px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 18px 0 4px; }
+.seo-static ul { padding-inline-start: 20px; }
+.seo-static a { color: var(--accent); }
+.seo-static .ipa { color: var(--accent); }
+.seo-static nav ul { display: flex; flex-wrap: wrap; gap: 6px 16px; list-style: none; padding: 0; }

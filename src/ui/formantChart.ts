@@ -27,6 +27,9 @@ export function drawFormantChart(
 ): void {
   const ctx = canvas.getContext("2d");
   if (!ctx) return;
+  // The chart is a physics plot: keep it left-to-right even in the he/ar UI
+  // (canvas text direction otherwise inherits dir="rtl" and flips label alignment).
+  ctx.direction = "ltr";
 
   const dpr = window.devicePixelRatio || 1;
   const w = canvas.clientWidth;
