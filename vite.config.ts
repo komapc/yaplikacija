@@ -26,7 +26,11 @@ function seoPages(): Plugin {
     configResolved(c) {
       outDir = c.build.outDir;
     },
-    transformIndexHtml: (html) => renderPage(html, "en", !isApp),
+    transformIndexHtml: (html) => {
+      const page = renderPage(html, "en", !isApp);
+      // The app stays offline and untracked: drop the Web Analytics beacon.
+      return isApp ? page.replace(/\s*<script[^>]*cf-beacon[^>]*><\/script>/, "") : page;
+    },
     closeBundle() {
       if (isApp) return;
       const template = readFileSync(join(outDir, "index.html"), "utf8");
