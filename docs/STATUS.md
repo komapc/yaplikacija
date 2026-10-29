@@ -18,6 +18,14 @@ non-native speakers: the Russian vowel **Ы** `[ɨ]` and the Hebrew/Arabic **Ain
   shows reference vowels (и/у/э…) as orientation, plots your attempt, and draws
   an edge arrow if you land off-chart. Score ring + targeted text feedback.
 - **Mobile-friendly** responsive layout.
+- **UI in four languages** (EN/RU/HE/AR, `src/i18n.ts`); Hebrew and Arabic run
+  right-to-left.
+- **Per-language pages** `/`, `/ru/`, `/he/`, `/ar/` generated at build time
+  (`src/seo.ts` + the plugin in `vite.config.ts`): own `lang`/`dir`, canonical,
+  hreflang, Open Graph/Twitter tags, JSON-LD, and a static intro + Ы/Ain
+  pronunciation guides that the app replaces on boot. The build also writes
+  `sitemap.xml`; `public/404.html` and `public/og-image.png`
+  (`python3 scripts/og-image.py`) are static.
 
 ## Analysis pipeline (`src/dsp`, `src/audio`)
 

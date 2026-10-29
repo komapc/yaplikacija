@@ -2,6 +2,11 @@
 import { describe, it, expect, beforeAll } from "vitest";
 
 const click = (sel: string) => (document.querySelector(sel) as HTMLElement).click();
+const pick = (lang: string) => {
+  const sel = document.querySelector("#lang-btn") as HTMLSelectElement;
+  sel.value = lang;
+  sel.dispatchEvent(new Event("change"));
+};
 const go = (id: string) => {
   location.hash = "#" + id;
   window.dispatchEvent(new Event("hashchange"));
@@ -49,17 +54,25 @@ describe("app boot (jsdom)", () => {
     expect(modal.hidden).toBe(true);
   });
 
-  it("switches the whole UI between English and Russian and keeps the tab", () => {
+  it("switches the whole UI between languages and keeps the tab", () => {
     go("duel");
-    click("#lang-btn");
+    pick("ru");
     expect(document.documentElement.lang).toBe("ru");
     expect(document.querySelector("#view")!.textContent).toContain("Дуэль");
     expect(document.querySelector<HTMLAnchorElement>("a.tab.active")?.dataset.id).toBe("duel");
     expect(document.querySelector("a.tab")!.textContent).toBe("Звук");
     click("#about-btn");
     expect(document.getElementById("about")!.textContent).toContain("формантами");
-    click("#lang-btn");
+    expect(location.pathname).toBe("/ru/"); // the address follows the language page
+    expect(location.hash).toBe("#duel");
+    pick("he");
+    expect(document.documentElement.lang).toBe("he");
+    expect(document.documentElement.dir).toBe("rtl");
+    expect(document.querySelector("a.tab")!.textContent).toBe("צליל");
+    pick("en");
     expect(document.documentElement.lang).toBe("en");
+    expect(document.documentElement.dir).toBe("ltr");
+    expect(location.pathname).toBe("/");
     expect(document.querySelector("a.tab")!.textContent).toBe("Sound");
   });
 });
