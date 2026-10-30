@@ -25,7 +25,9 @@ non-native speakers: the Russian vowel **Ы** `[ɨ]` and the Hebrew/Arabic **Ain
   hreflang, Open Graph/Twitter tags, JSON-LD, and a static intro + Ы/Ain
   pronunciation guides that the app replaces on boot. The build also writes
   `sitemap.xml`; `public/404.html` and `public/og-image.png`
-  (`python3 scripts/og-image.py`) are static.
+  (`python3 scripts/og-image.py`) are static, and
+  `public/yandex_b2e2dc6c0861cbb5.html` is the Yandex Webmaster verification
+  for yaplikacija.lipu.dev — don't delete it.
 
 ## Analysis pipeline (`src/dsp`, `src/audio`)
 
