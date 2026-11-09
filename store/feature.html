@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Unbounded:wght@600;800&family=Onest:wght@400;600&display=swap");
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1024px; height: 500px; }
+      .banner {
+        position: relative;
+        width: 1024px; height: 500px;
+        overflow: hidden;
+        background:
+          radial-gradient(120% 140% at 18% -10%, rgba(47,227,155,0.22), transparent 55%),
+          radial-gradient(120% 140% at 110% 120%, rgba(91,140,255,0.18), transparent 55%),
+          linear-gradient(160deg, #11161f 0%, #0a0c10 70%);
+        display: flex;
+        align-items: center;
+        gap: 52px;
+        padding: 0 70px;
+        font-family: "Onest", system-ui, sans-serif;
+      }
+      .tile {
+        flex: 0 0 auto;
+        width: 300px; height: 300px;
+        border-radius: 70px;
+        background: linear-gradient(180deg, #161b23, #0a0c10);
+        border: 1.5px solid rgba(47,227,155,0.22);
+        box-shadow: 0 0 90px rgba(47,227,155,0.28), inset 0 0 60px rgba(47,227,155,0.06);
+        display: flex; align-items: center; justify-content: center;
+      }
+      .glyph {
+        font-family: "Unbounded", sans-serif;
+        font-weight: 800;
+        font-size: 180px;
+        line-height: 1;
+        background: linear-gradient(180deg, #43eaa9, #23c585);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        filter: drop-shadow(0 0 26px rgba(47,227,155,0.55));
+      }
+      .copy { color: #eef2f6; }
+      .title {
+        font-family: "Unbounded", sans-serif;
+        font-weight: 800;
+        font-size: 56px;
+        letter-spacing: -1px;
+        line-height: 1.05;
+        white-space: nowrap;
+      }
+      .accent { color: #2fe39b; }
+      .sub {
+        margin-top: 18px;
+        font-size: 27px;
+        font-weight: 600;
+        color: #aeb7c5;
+        line-height: 1.4;
+        max-width: 560px;
+      }
+      .pill {
+        display: inline-block;
+        margin-top: 26px;
+        padding: 10px 22px;
+        border-radius: 999px;
+        border: 1px solid rgba(47,227,155,0.35);
+        color: #2fe39b;
+        font-size: 20px;
+        font-weight: 600;
+        background: rgba(47,227,155,0.07);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="banner">
+      <div class="tile"><span class="glyph">Ы</span></div>
+      <div class="copy">
+        <div class="title">Аппликация&nbsp;<span class="accent">Ы</span></div>
+        <div class="sub">Тренажёр произношения русского звука [ɨ] — запись, анализ формант и мгновенная обратная связь.</div>
+        <span class="pill">Запись → Анализ → Оценка</span>
+      </div>
+    </div>
+  </body>
+</html>
