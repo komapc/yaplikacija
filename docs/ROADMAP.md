@@ -35,17 +35,19 @@ Grouped by theme; ordered roughly by value/effort within each. See
   in CI to catch DSP regressions like the accidental LPC-order slip.
 - **Whole-word verification (stretch)** — optional ASR pass to confirm the
   learner said the right word before grading the vowel.
-- **UI: show the analysed segment** — highlight the located nucleus on a
-  waveform/spectrogram so the user sees *what* was scored.
+- ~~**UI: show the analysed segment**~~ — done: word mode draws the waveform
+  with the scored nucleus highlighted. A spectrogram view is still open.
 
 ## Platform
 
-- **Android via Capacitor** — wrap the static build; add `RECORD_AUDIO`
-  permission. Steps in the README.
-- **Progress & persistence** — `localStorage` for streaks/scores per word;
-  later, optional accounts and structured lessons.
-- **i18n** — UI strings are mixed RU/EN; consider a proper language toggle
-  (there's a `/lang` skill in the wider toolset).
+- **Android: go public** — the Capacitor wrap is done (signed `.aab` built in
+  CI, auto-published to Play Internal testing on `v*` tags). Next: closed/open
+  testing and a production release; store listing assets are in `store/`.
+- **Progress & persistence** — per-word best scores are stored in
+  `localStorage`; next: streaks, history, and later optional accounts and
+  structured lessons.
+- ~~**i18n**~~ — done: full UI in EN/RU/HE/AR with a language switch and
+  per-language pages (`/`, `/ru/`, `/he/`, `/ar/`).
 
 ## Nice-to-haves
 

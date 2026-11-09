@@ -28,7 +28,7 @@ exists and [ROADMAP.md](ROADMAP.md) for plans.
 - **Discriminative word scoring** — grading the energy-based vowel nucleus
   (target-independent) means a wrong vowel scores low; an earlier
   best-matching-window approach cherry-picked and scored almost anything 90%+.
-- **Test + CI discipline** — 69 tests gate every deploy; Praat regression tools
+- **Test + CI discipline** — 101 tests (plus a typecheck of src and test/) gate every deploy; Praat regression tools
   (`praat:compare`, `validate:f3`) exist; a synthetic-vowel harness validates the
   estimator against ground truth.
 
@@ -56,9 +56,10 @@ exists and [ROADMAP.md](ROADMAP.md) for plans.
   spread, so the "good zone" width isn't tuned to each context.
 - **Corpus fragility** — calibration depends on a `Ru-<word>.ogg` existing on
   Commons (`был` has none) and on CC-BY licensing; re-running can shift targets.
-- **No persistence / progression** — no accounts, saved progress, streaks, or
-  lesson structure; each session starts fresh.
-- **Not yet on Android** — only the web build exists.
+- **Thin progression** — only a per-word best score is kept (device-local
+  `localStorage`); no accounts, streaks, history or lesson structure.
+- **Android is internal-testing only** — the Capacitor build is signed in CI and
+  published to the Play Internal testing track on `v*` tags; not yet public.
 
 ## Risk notes
 
