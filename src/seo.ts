@@ -55,9 +55,9 @@ const TEXT: Record<Lang, PageText> = {
       "How to pronounce the Russian Ы [ɨ] and the Arabic/Hebrew ayin ע / ع [ʕ]: record your voice, see your vowel on a formant chart, practise with games. Free.",
     h1: "How to pronounce the Russian Ы and the Arabic/Hebrew ayin (ع / ע) — Аппликация Ы",
     intro: [
-      `<b>Аппликация Ы</b> (Yaplikacija) is a free pronunciation trainer for two sounds that learners find hard:
-      the Russian vowel <b>Ы</b> <span class="ipa">[ɨ]</span> and the Arabic/Hebrew consonant
-      <b>Ain</b> ع / ע <span class="ipa">[ʕ]</span>. Hold the button, say the sound, and the app measures the
+      `How do you pronounce the Russian <b>Ы</b> <span class="ipa">[ɨ]</span> or the Arabic/Hebrew
+      <b>ayin</b> (Ain) ع / ע <span class="ipa">[ʕ]</span>? <b>Аппликация Ы</b> (Yaplikacija) is a free
+      pronunciation trainer for these two sounds that learners find hard. Hold the button, say the sound, and the app measures the
       first two formants of your voice (F1 and F2) and shows on a vowel chart how close you are to the target zone.`,
       `Everything runs on your device: no recording is sent to a server and there is no account. Besides the
       sound drill there is a word mode with native-speaker references (мы, ты, сыр…) and three short games —
@@ -129,7 +129,7 @@ const TEXT: Record<Lang, PageText> = {
   ru: {
     title: "Как произносить айн ع / ע в иврите и арабском | Аппликация Ы",
     description:
-      "Как произносить айн [ʕ] — букву ע в иврите и ع в арабском: где в горле рождается звук, примеры слов и частые ошибки. Бесплатный тренажёр произношения.",
+      "Как произносить айн [ʕ] — букву ע в иврите и ع в арабском: где в горле рождается звук, примеры слов и частые ошибки. Плюс тренажёр русского Ы с записью голоса.",
     h1: "Как произносить айн (ع / ע): буква ע в иврите и ع в арабском",
     ainFirst: true,
     intro: [
@@ -213,8 +213,9 @@ const TEXT: Record<Lang, PageText> = {
       "איך מבטאים את האות Ы ברוסית [ɨ] ואיך הוגים נכון ע גרונית [ʕ]: מקליטים את הקול, רואים את התנועה על תרשים פורמנטים ומתאמנים במשחקים. חינם, בלי הרשמה.",
     h1: "איך מבטאים את האות Ы ברוסית, והגייה נכונה של ע / ع",
     intro: [
-      `<b>עפליקציה ע</b> (Yaplikacija) היא מאמן הגייה חינמי לשני צלילים שקשים ללומדים: התנועה הרוסית
-      <b>Ы</b> <span class="ipa">[ɨ]</span> והעיצור <b>ע / ع</b> <span class="ipa">[ʕ]</span> של העברית והערבית.
+      `איך מבטאים את האות <b>Ы</b> <span class="ipa">[ɨ]</span> ברוסית, ומהי ההגייה הנכונה של
+      <b>ע / ع</b> <span class="ipa">[ʕ]</span> בעברית ובערבית? <b>עפליקציה ע</b> (Yaplikacija) היא מאמן הגייה
+      חינמי לשני הצלילים האלה, שקשים ללומדים.
       לוחצים על הכפתור ומחזיקים, הוגים את הצליל, והאפליקציה מודדת את שני הפורמנטים הראשונים של הקול
       (F1 ו־F2) ומראה על תרשים התנועות כמה קרוב הצליל לאזור היעד.`,
       `הכול רץ על המכשיר שלכם: שום הקלטה לא נשלחת לשרת ואין צורך בחשבון. מלבד תרגול הצליל יש מצב מילים עם
@@ -285,7 +286,7 @@ const TEXT: Record<Lang, PageText> = {
       "كيف تنطق حرف Ы الروسي [ɨ]: سجّل صوتك، وشاهد صائتك على مخطط الفورمانتات، وتدرّب بألعاب قصيرة. ومعه دليل لنطق العين [ʕ] في العربية والعبرية. مجاني.",
     h1: "كيف تنطق حرف Ы الروسي — مدرّب نطق مجاني، مع دليل لنطق العين ع / ע",
     intro: [
-      `<b>Аппликация Ы</b> (Yaplikacija) مدرّب نطق مجاني لصوتين يصعبان على المتعلمين: الصائت الروسي
+      `كيف تنطق حرف <b>Ы</b> الروسي؟ <b>Аппликация Ы</b> (Yaplikacija) مدرّب نطق مجاني لصوتين يصعبان على المتعلمين: الصائت الروسي
       <b>Ы</b> <span class="ipa">[ɨ]</span> وحرف <b>العين</b> ع / ע <span class="ipa">[ʕ]</span> في العربية والعبرية.
       اضغط على الزر مطولًا وانطق الصوت، فيقيس التطبيق أول فورمانتين في صوتك (F1 وF2) ويبيّن على مخطط
       الصوائت مدى قربك من منطقة الهدف.`,
