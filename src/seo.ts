@@ -36,6 +36,8 @@ interface PageText {
   description: string;
   h1: string;
   intro: string[];
+  /** Put the Ain guide first: each page leads with the sound that is foreign to its readers. */
+  ainFirst?: boolean;
   yery: Omit<Guide, "how"> & { how: string[] };
   ain: Guide;
   langsLabel: string;
@@ -48,10 +50,10 @@ interface PageText {
 // prepended in render() so the page and the trainer say the same thing.
 const TEXT: Record<Lang, PageText> = {
   en: {
-    title: "Yaplikacija — Russian Ы & Arabic/Hebrew Ain trainer",
+    title: "How to Pronounce Russian Ы and Ayin (ع / ע) | Yaplikacija",
     description:
-      "Learn to pronounce Russian Ы [ɨ] and Arabic/Hebrew Ain [ʕ]: record your voice, see your vowel on a formant chart and practise with games. Free, no account.",
-    h1: "Аппликация Ы — pronunciation trainer for the Russian Ы and the Arabic/Hebrew Ain",
+      "How to pronounce the Russian Ы [ɨ] and the Arabic/Hebrew ayin ע / ع [ʕ]: record your voice, see your vowel on a formant chart, practise with games. Free.",
+    h1: "How to pronounce the Russian Ы and the Arabic/Hebrew ayin (ع / ע) — Аппликация Ы",
     intro: [
       `<b>Аппликация Ы</b> (Yaplikacija) is a free pronunciation trainer for two sounds that learners find hard:
       the Russian vowel <b>Ы</b> <span class="ipa">[ɨ]</span> and the Arabic/Hebrew consonant
@@ -63,7 +65,7 @@ const TEXT: Record<Lang, PageText> = {
       covered by the guide below.`,
     ],
     yery: {
-      h2: "Pronouncing the Russian Ы [ɨ]",
+      h2: "How to pronounce the Russian Ы [ɨ]",
       lead: `Ы is a close central unrounded vowel: the tongue is as high as for «и» <span class="ipa">[i]</span>
       but pulled back toward the middle of the mouth, and the lips stay spread, not rounded. In Russian it
       follows only hard (non-palatalized) consonants, which is why it almost never starts a word.`,
@@ -88,7 +90,7 @@ const TEXT: Record<Lang, PageText> = {
       ],
     },
     ain: {
-      h2: "Pronouncing Ain ع / ע [ʕ]",
+      h2: "Arabic and Hebrew ayin (ع / ע) pronunciation [ʕ]",
       lead: `Ain is a voiced pharyngeal consonant: the root of the tongue is pulled back toward the back wall of the
       throat, narrowing the pharynx, while the vocal folds keep vibrating. It is the voiced partner of Arabic ح
       <span class="ipa">[ħ]</span> (also Hebrew ח in Mizrahi pronunciation). In Arabic it is a full consonant;
@@ -125,11 +127,15 @@ const TEXT: Record<Lang, PageText> = {
   },
 
   ru: {
-    title: "Аппликация Ы — тренажёр звуков Ы и Айн (ع / ע)",
+    title: "Как произносить айн ع / ע в иврите и арабском | Аппликация Ы",
     description:
-      "Тренажёр произношения русского Ы [ɨ] и арабского/ивритского Айна [ʕ]: запиши голос, увидь гласный на диаграмме формант, играй. Бесплатно, без регистрации.",
-    h1: "Аппликация Ы — тренажёр произношения русского Ы и арабского/ивритского Айна",
+      "Как произносить айн [ʕ] — букву ע в иврите и ع в арабском: где в горле рождается звук, примеры слов и частые ошибки. Бесплатный тренажёр произношения.",
+    h1: "Как произносить айн (ع / ע): буква ע в иврите и ع в арабском",
+    ainFirst: true,
     intro: [
+      `<b>Айн</b> <span class="ipa">[ʕ]</span> — гортанный (фарингальный) согласный: ع в арабском, ע в иврите.
+      В русском такого звука нет, поэтому его обычно заменяют твёрдым приступом или просто пропускают. Ниже —
+      как произносить букву ע в иврите и ع в арабском: что делает горло, примеры слов и частые ошибки.`,
       `<b>Аппликация Ы</b> (Yaplikacija) — бесплатный тренажёр произношения двух звуков, которые трудно даются
       ученикам: русского гласного <b>Ы</b> <span class="ipa">[ɨ]</span> и арабского/ивритского согласного
       <b>Айн</b> ع / ע <span class="ipa">[ʕ]</span>. Зажми кнопку, произнеси звук — приложение измерит первые две
@@ -164,7 +170,7 @@ const TEXT: Record<Lang, PageText> = {
       ],
     },
     ain: {
-      h2: "Произношение Айна ع / ע [ʕ]",
+      h2: "Как произносить айн ع / ע [ʕ]",
       lead: `Айн — звонкий глоточный (фарингальный) согласный: корень языка оттягивается к задней стенке глотки и
       сужает её, а голосовые связки продолжают колебаться. Это звонкая пара к арабскому ح
       <span class="ipa">[ħ]</span> (и к ивритскому ח в восточном произношении). В арабском это полноценный
@@ -202,10 +208,10 @@ const TEXT: Record<Lang, PageText> = {
   },
 
   he: {
-    title: "עפליקציה ע — אימון הגייה של ע [ʕ] ושל Ы הרוסית",
+    title: "איך מבטאים את האות Ы ברוסית, והגייה נכונה של ע | עפליקציה ע",
     description:
-      "אימון הגייה של ע גרונית [ʕ] ושל התנועה הרוסית Ы [ɨ]: מקליטים את הקול, רואים את התנועה על תרשים פורמנטים ומתאמנים במשחקים קצרים. חינם, בלי הרשמה.",
-    h1: "עפליקציה ע — אימון הגייה של Ы הרוסית ושל ע / ع [ʕ]",
+      "איך מבטאים את האות Ы ברוסית [ɨ] ואיך הוגים נכון ע גרונית [ʕ]: מקליטים את הקול, רואים את התנועה על תרשים פורמנטים ומתאמנים במשחקים. חינם, בלי הרשמה.",
+    h1: "איך מבטאים את האות Ы ברוסית, והגייה נכונה של ע / ع",
     intro: [
       `<b>עפליקציה ע</b> (Yaplikacija) היא מאמן הגייה חינמי לשני צלילים שקשים ללומדים: התנועה הרוסית
       <b>Ы</b> <span class="ipa">[ɨ]</span> והעיצור <b>ע / ع</b> <span class="ipa">[ʕ]</span> של העברית והערבית.
@@ -216,7 +222,7 @@ const TEXT: Record<Lang, PageText> = {
       מאמן העי״ן עדיין בכיוונון, ולכן בינתיים העי״ן מוסברת במדריך שלמטה.`,
     ],
     yery: {
-      h2: "הגיית Ы הרוסית [ɨ]",
+      h2: "איך מבטאים את Ы הרוסית [ɨ]",
       lead: `Ы היא תנועה סגורה, מרכזית ולא מעוגלת: הלשון גבוהה כמו ב־«и» <span class="ipa">[i]</span>
       (כמו ב״אִי״), אבל נסוגה לאחור אל מרכז הפה, והשפתיים נשארות מתוחות ולא מעוגלות. ברוסית היא באה רק אחרי
       עיצורים קשים (לא מרוככים), ולכן כמעט אף פעם לא פותחת מילה.`,
@@ -241,7 +247,7 @@ const TEXT: Record<Lang, PageText> = {
       ],
     },
     ain: {
-      h2: "הגיית ע / ع [ʕ]",
+      h2: "הגייה נכונה של ע / ع [ʕ]",
       lead: `ע היא עיצור לועי קולי: שורש הלשון נמשך לאחור אל הדופן האחורית של הגרון ומצר את הלוע, ומיתרי הקול
       ממשיכים לרטוט. זהו בן הזוג הקולי של ح הערבית <span class="ipa">[ħ]</span> (ושל ח בהגייה המזרחית). בערבית
       זה עיצור מלא; בעברית המודרנית רוב הדוברים הוגים ע כסגר סדקי <span class="ipa">[ʔ]</span> (כמו א) או
@@ -274,10 +280,10 @@ const TEXT: Record<Lang, PageText> = {
   },
 
   ar: {
-    title: "Yaplikacija — تدريب على نطق Ы الروسية والعين [ʕ]",
+    title: "كيف تنطق حرف Ы الروسي — مدرّب نطق مجاني | Yaplikacija",
     description:
-      "تعلّم نطق الصائت الروسي Ы [ɨ] وحرف العين [ʕ] في العربية والعبرية: سجّل صوتك، وشاهد صائتك على مخطط الفورمانتات، وتدرّب بألعاب قصيرة. مجاني وبلا حساب.",
-    h1: "Yaplikacija — مدرّب نطق Ы الروسية والعين ع / ע [ʕ]",
+      "كيف تنطق حرف Ы الروسي [ɨ]: سجّل صوتك، وشاهد صائتك على مخطط الفورمانتات، وتدرّب بألعاب قصيرة. ومعه دليل لنطق العين [ʕ] في العربية والعبرية. مجاني.",
+    h1: "كيف تنطق حرف Ы الروسي — مدرّب نطق مجاني، مع دليل لنطق العين ع / ע",
     intro: [
       `<b>Аппликация Ы</b> (Yaplikacija) مدرّب نطق مجاني لصوتين يصعبان على المتعلمين: الصائت الروسي
       <b>Ы</b> <span class="ipa">[ɨ]</span> وحرف <b>العين</b> ع / ע <span class="ipa">[ʕ]</span> في العربية والعبرية.
@@ -288,7 +294,7 @@ const TEXT: Record<Lang, PageText> = {
       مدرّب Ы يعمل الآن، أما مدرّب العين فما زال قيد الضبط، لذا يغطي الدليل أدناه العين في الوقت الحالي.`,
     ],
     yery: {
-      h2: "نطق حرف Ы الروسي [ɨ]",
+      h2: "كيف تنطق حرف Ы الروسي [ɨ]",
       lead: `Ы صائت مغلق مركزي غير مدوّر: يرتفع اللسان كما في «и» <span class="ipa">[i]</span> (كالياء في «في»)،
       لكنه يتراجع نحو وسط الفم، وتبقى الشفتان منفرجتين غير مدوّرتين. في الروسية لا يأتي إلا بعد الصوامت
       القاسية (غير الملينة)، ولذلك لا يكاد يبدأ به أي كلمة.`,
@@ -415,6 +421,8 @@ export function renderHead(l: Lang): string {
 /** Static page content placed inside #app (replaced by the live app on boot). */
 export function renderBody(l: Lang): string {
   const p = TEXT[l];
+  const yeryGuide = guide(p.yery, translate(l, "yery.hint"));
+  const ainGuide = guide(p.ain, translate(l, "ain.hint"));
   const langLinks = LANGS.map(
     (x) =>
       `<li><a href="${pathOf(x)}" hreflang="${x}" lang="${x}"${x === l ? ' aria-current="page"' : ""}>${LANG_NAME[x]}</a></li>`,
@@ -424,8 +432,7 @@ export function renderBody(l: Lang): string {
       <h1>${p.h1}</h1>
       ${p.intro.map((x) => `<p>${x}</p>`).join("\n      ")}
       <noscript><p><b>${p.noscript}</b></p></noscript>
-      ${guide(p.yery, translate(l, "yery.hint"))}
-      ${guide(p.ain, translate(l, "ain.hint"))}
+      ${p.ainFirst ? ainGuide + yeryGuide : yeryGuide + ainGuide}
       <nav aria-label="${p.langsLabel}">
         <h2>${p.langsLabel}</h2>
         <ul>${langLinks}</ul>
