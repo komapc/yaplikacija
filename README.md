@@ -221,3 +221,7 @@ Complete Data Safety (no data collected/shared — on-device only), content
 rating, and the store listing (icon 512, feature graphic 1024×500, screenshots —
 see `store/`) with the privacy-policy URL above. Test via the internal track,
 then promote to Production.
+
+## License
+
+Code: MIT ([`LICENSE`](LICENSE)). The reference recordings in `corpus/` keep their own licences (CC BY / CC BY-SA, from Wikimedia Commons and Lingua Libre); authors and licences for each file are listed in [`corpus/ATTRIBUTION.md`](corpus/ATTRIBUTION.md).
