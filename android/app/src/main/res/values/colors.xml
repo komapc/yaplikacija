@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Matches the web app's CSS bg variable and capacitor.config.ts android.backgroundColor.
+         Fills the system-bar strips Capacitor pads natively on WebView < 140. -->
+    <color name="app_window_background">#0a0c10</color>
+</resources>

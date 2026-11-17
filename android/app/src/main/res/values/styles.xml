@@ -13,6 +13,10 @@
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
         <item name="android:background">@null</item>
+        <!-- Edge-to-edge (targetSdk 36): the window shows through behind the
+             status/nav bars, so keep it the app's dark background, not the
+             DayNight default (light in light mode). -->
+        <item name="android:windowBackground">@color/app_window_background</item>
     </style>
 
 
