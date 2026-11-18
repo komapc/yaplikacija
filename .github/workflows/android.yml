@@ -36,7 +36,21 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # Same checks as deploy.yml's test job: never build/publish a release that fails them.
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck # type-checks src AND test/
+      - run: npm test
+
   bundle:
+    needs: test
     runs-on: ubuntu-latest
     env:
       # Surfaced as env so the publish step's `if` can self-skip until the
