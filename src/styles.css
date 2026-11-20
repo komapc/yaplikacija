@@ -61,6 +61,16 @@ body::before {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
+/* Safe-area insets. env() is the standard source; Capacitor 8 (SystemBars,
+   insetsHandling "css") also injects --safe-area-inset-* on <html>, which is
+   correct even where a WebView reports env() as 0. Take whichever is larger. */
+:root {
+  --sa-top: max(env(safe-area-inset-top, 0px), var(--safe-area-inset-top, 0px));
+  --sa-right: max(env(safe-area-inset-right, 0px), var(--safe-area-inset-right, 0px));
+  --sa-bottom: max(env(safe-area-inset-bottom, 0px), var(--safe-area-inset-bottom, 0px));
+  --sa-left: max(env(safe-area-inset-left, 0px), var(--safe-area-inset-left, 0px));
+}
+
 #app {
   position: relative;
   z-index: 1;
@@ -69,10 +79,10 @@ body::before {
   padding: 22px 18px 40px;
   /* Edge-to-edge (viewport-fit=cover, Android targetSdk 36 / notched iPhones):
      keep content clear of the status/nav bars and display cutouts. */
-  padding-top: calc(22px + env(safe-area-inset-top, 0px));
-  padding-bottom: calc(40px + env(safe-area-inset-bottom, 0px));
-  padding-left: calc(18px + env(safe-area-inset-left, 0px));
-  padding-right: calc(18px + env(safe-area-inset-right, 0px));
+  padding-top: calc(22px + var(--sa-top));
+  padding-bottom: calc(40px + var(--sa-bottom));
+  padding-left: calc(18px + var(--sa-left));
+  padding-right: calc(18px + var(--sa-right));
 }
 
 /* ── Top bar ──────────────────────────────────────────────────────────── */
@@ -371,8 +381,8 @@ button.ghost:disabled { opacity: 0.35; cursor: default; }
   align-items: center;
   justify-content: center;
   padding: 16px;
-  padding: calc(16px + env(safe-area-inset-top, 0px)) calc(16px + env(safe-area-inset-right, 0px))
-    calc(16px + env(safe-area-inset-bottom, 0px)) calc(16px + env(safe-area-inset-left, 0px));
+  padding: calc(16px + var(--sa-top)) calc(16px + var(--sa-right))
+    calc(16px + var(--sa-bottom)) calc(16px + var(--sa-left));
   animation: rise 0.25s ease both;
 }
 .modal-card {
@@ -448,8 +458,8 @@ button.ghost:disabled { opacity: 0.35; cursor: default; }
 /* ── Phone ────────────────────────────────────────────────────────────── */
 @media (max-width: 480px) {
   #app {
-    padding: calc(14px + env(safe-area-inset-top, 0px)) calc(12px + env(safe-area-inset-right, 0px))
-      calc(30px + env(safe-area-inset-bottom, 0px)) calc(12px + env(safe-area-inset-left, 0px));
+    padding: calc(14px + var(--sa-top)) calc(12px + var(--sa-right))
+      calc(30px + var(--sa-bottom)) calc(12px + var(--sa-left));
   }
   .trainer { margin-top: 16px; }
   .brand { font-size: 15px; }

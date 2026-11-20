@@ -27,7 +27,10 @@ function seoPages(): Plugin {
       outDir = c.build.outDir;
     },
     transformIndexHtml: (html) => {
-      const page = renderPage(html, "en", !isApp);
+      // The static article is for search engines. In the app it would flash on
+      // screen until the bundle boots, so the app build leaves #app empty.
+      const template = isApp ? html.replace(/<!--seo:body-->[\s\S]*?<!--\/seo:body-->/, "") : html;
+      const page = renderPage(template, "en", !isApp);
       // The app stays offline and untracked: drop the Web Analytics beacon.
       return isApp ? page.replace(/\s*<script[^>]*cf-beacon[^>]*><\/script>/, "") : page;
     },
