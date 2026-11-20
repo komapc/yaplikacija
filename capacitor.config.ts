@@ -19,8 +19,8 @@ const config: CapacitorConfig = {
     // so the WebView would otherwise be drawn under the status/nav bars.
     // "css" (the default, set explicitly): on WebView < 140 Capacitor pads the
     // WebView natively; on >= 140 it follows viewport-fit (index.html sets
-    // `cover`) and the layout pads itself with env(safe-area-inset-*) in
-    // src/styles.css. "DARK" = light bar icons, for the dark #0a0c10 background.
+    // `cover`) and the layout pads itself with --sa-* in src/styles.css
+    // (the larger of env(safe-area-inset-*) and the injected --safe-area-inset-*). "DARK" = light bar icons, for the dark #0a0c10 background.
     SystemBars: {
       insetsHandling: "css",
       style: "DARK",
