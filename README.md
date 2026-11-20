@@ -190,7 +190,7 @@ manual dispatch), uploads it as a build artifact, and — on a tag — **auto-pu
 it to the Internal testing track**. Requires repo **Actions secrets**:
 `ANDROID_KEYSTORE_BASE64` (base64 of the keystore), `ANDROID_KEYSTORE_PASSWORD`,
 `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD`. `versionName` comes from the tag,
-`versionCode` is `1000 + run number` (always increasing, above the manual `1`).
+`versionCode` is `1010 + run number` (always increasing, above the hand-uploaded `1008`/`1009`).
 
 ```bash
 git tag v0.2.0 && git push origin v0.2.0   # build, sign, publish to internal

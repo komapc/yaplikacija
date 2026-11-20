@@ -88,12 +88,14 @@ jobs:
           else
             echo "name=0.0.0-${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
           fi
-          # versionCode = 1000 + run number, computed in shell: GitHub Actions
+          # versionCode = 1010 + run number, computed in shell. The offset was 1000
+          # until Oct 2026, when 1008 and 1009 were built locally and uploaded by
+          # hand; 1010 keeps CI codes above them (run 8 → 1018). GitHub Actions
           # template expressions have no arithmetic operators, so doing the
           # addition in an expression is a syntax error that invalidates the
           # whole workflow file. (Keep the += out of any workflow expression,
           # including comments — templates are interpolated even inside run:.)
-          echo "code=$((1000 + GITHUB_RUN_NUMBER))" >> "$GITHUB_OUTPUT"
+          echo "code=$((1010 + GITHUB_RUN_NUMBER))" >> "$GITHUB_OUTPUT"
 
       - name: Decode upload keystore
         env:
@@ -108,8 +110,8 @@ jobs:
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
           ANDROID_VERSION_NAME: ${{ steps.ver.outputs.name }}
-          # 1000 + run number → always-increasing and safely above the manual
-          # versionCode 1 already uploaded to the Internal testing track.
+          # 1010 + run number → always-increasing and above every code already in
+          # the Play bundle library (manual uploads went up to 1009).
           ANDROID_VERSION_CODE: ${{ steps.ver.outputs.code }}
         run: ./gradlew bundleRelease --no-daemon
 
