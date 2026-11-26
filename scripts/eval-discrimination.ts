@@ -12,8 +12,8 @@ import { analyzeWord } from "../src/dsp/analyze";
 import { resampleTo } from "../src/dsp/resample";
 import { TARGETS, scoreAttempt } from "../src/trainers/targets";
 
-const ROOT = "/home/mark/projects/yaplikacija";
-const EVAL = "/home/mark/projects/yaplikacija/samples/eval-corpus";
+const ROOT = join(import.meta.dirname, "..");
+const EVAL = join(ROOT, "samples/eval-corpus");
 
 interface Item { path: string; name: string; label: "y" | "i" | "other" }
 
