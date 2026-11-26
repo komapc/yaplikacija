@@ -17,7 +17,7 @@ import { resampleTo } from "../src/dsp/resample";
 import { findVowelNucleus, type FrameResult } from "../src/dsp/analyze";
 import { TARGETS, scoreAttempt } from "../src/trainers/targets";
 
-const ROOT = "/home/mark/projects/yaplikacija";
+const ROOT = join(import.meta.dirname, "..");
 const EVAL = join(ROOT, "samples/eval-corpus");
 const WORK = "/tmp/claude-1000/-home-mark-projects-yaplikacija/e907f6eb-7606-4f07-81b4-d8116d25d5b2/scratchpad/variants-work";
 const PRAAT = `${process.env.HOME}/.local/bin/praat_barren`;
