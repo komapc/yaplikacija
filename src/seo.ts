@@ -52,7 +52,7 @@ const TEXT: Record<Lang, PageText> = {
   en: {
     title: "How to Pronounce Russian Ы and Ayin (ع / ע) | Yaplikacija",
     description:
-      "How to pronounce the Russian Ы [ɨ] and the Arabic/Hebrew ayin ע / ع [ʕ]: record your voice, see your vowel on a formant chart, practise with games. Free.",
+      "How to pronounce the Russian Ы (yery) [ɨ] and the Arabic/Hebrew ayin ע / ع [ʕ]: record your voice, see your vowel on a formant chart, practise with games. Free.",
     h1: "How to pronounce the Russian Ы and the Arabic/Hebrew ayin (ع / ע) — Аппликация Ы",
     intro: [
       `How do you pronounce the Russian <b>Ы</b> <span class="ipa">[ɨ]</span> or the Arabic/Hebrew
@@ -65,8 +65,9 @@ const TEXT: Record<Lang, PageText> = {
       covered by the guide below.`,
     ],
     yery: {
-      h2: "How to pronounce the Russian Ы [ɨ]",
-      lead: `Ы is a close central unrounded vowel: the tongue is as high as for «и» <span class="ipa">[i]</span>
+      h2: "How to pronounce the Russian Ы (yery) [ɨ]",
+      lead: `Ы, the letter <i>yery</i> (еры), is the “Russian y” of transliterations such as <i>my</i>, <i>ty</i>, <i>syr</i>;
+      without a Cyrillic keyboard people often type it as «bI». It is a close central unrounded vowel: the tongue is as high as for «и» <span class="ipa">[i]</span>
       but pulled back toward the middle of the mouth, and the lips stay spread, not rounded. In Russian it
       follows only hard (non-palatalized) consonants, which is why it almost never starts a word.`,
       howH3: "Tongue and lips",
