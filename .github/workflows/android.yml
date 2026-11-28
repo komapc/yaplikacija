@@ -115,7 +115,7 @@ jobs:
           ANDROID_VERSION_CODE: ${{ steps.ver.outputs.code }}
         run: ./gradlew bundleRelease --no-daemon
 
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: app-release-aab
           path: android/app/build/outputs/bundle/release/app-release.aab
