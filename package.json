@@ -25,7 +25,7 @@
     "audio-decode": "^3.10.2",
     "jsdom": "^29.1.1",
     "tsx": "^4.22.4",
-    "typescript": "^5.5.0",
+    "typescript": "^7.0.2",
     "vite": "^8.3.8",
     "vitest": "^4.1.9"
   },
