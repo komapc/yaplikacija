@@ -1,0 +1,14 @@
+version: 2
+updates:
+  # npm: one grouped PR a month for minor/patch updates; a major update gets its own PR.
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: monthly
+    groups:
+      minor-and-patch:
+        update-types: [minor, patch]
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
